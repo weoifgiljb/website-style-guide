@@ -8,14 +8,17 @@ import {
   compileScript,
   compileTemplate,
   compileStyle
-} from '@vue/compiler-sfc'
+} from 'vue/compiler-sfc'
 import { build } from 'vite'
 import { LAYOUT_ITEMS } from '../src/data/layouts.js'
+import { MOTION_ITEMS } from '../src/data/motions.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = path.resolve(__dirname, '..')
 const LAYOUTS_DIR = path.join(ROOT_DIR, 'src', 'components', 'demos', 'layouts')
 const INDEX_FILE = path.join(LAYOUTS_DIR, 'index.js')
+const MOTIONS_DIR = path.join(ROOT_DIR, 'src', 'components', 'demos', 'motions')
+const MOTIONS_INDEX_FILE = path.join(MOTIONS_DIR, 'index.js')
 
 test('every LAYOUT_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with viewport & compact props and .is-mobile styles', () => {
   assert.equal(LAYOUT_ITEMS.length, 14)
@@ -172,6 +175,208 @@ test('Vite programmatic in-memory build compiles layouts/index.js and all 14 SFC
   const jsChunk = outputs[0].output.find((chunk) => chunk.type === 'chunk')
   assert.ok(jsChunk, 'Expected compiled JS chunk for layouts/index.js')
   for (const item of LAYOUT_ITEMS) {
+    assert.match(jsChunk.code, new RegExp(`\\b${item.demoKey}\\b`), `Bundle output missing ${item.demoKey}`)
+  }
+})
+
+test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with replayTick prop and stage-badge', () => {
+  assert.equal(MOTION_ITEMS.length, 14)
+
+  const entranceKeys = new Set(['MotionFadeUp', 'MotionStagger', 'MotionZoomIn'])
+  const durResponsiveKeys = new Set([
+    'MotionFadeUp',
+    'MotionStagger',
+    'MotionZoomIn',
+    'MotionTextRotate',
+    'MotionHoverLift',
+    'MotionBorderGlow',
+    'MotionImageZoom',
+    'MotionAccordion',
+    'MotionTabSlide',
+    'MotionStickyScroll',
+    'MotionParallax'
+  ])
+
+  for (const item of MOTION_ITEMS) {
+    const sfcPath = path.join(MOTIONS_DIR, `${item.demoKey}.vue`)
+    assert.ok(
+      fs.existsSync(sfcPath),
+      `Missing motion component file for ${item.id}: ${sfcPath}`
+    )
+
+    const source = fs.readFileSync(sfcPath, 'utf8')
+    const { descriptor, errors } = parse(source, { filename: `${item.demoKey}.vue` })
+    assert.equal(
+      errors.length,
+      0,
+      `${item.demoKey}.vue failed SFC parse: ${errors.map((e) => e.message).join('; ')}`
+    )
+    assert.ok(descriptor.template, `${item.demoKey}.vue is missing <template>`)
+    assert.ok(descriptor.scriptSetup, `${item.demoKey}.vue is missing <script setup>`)
+    assert.ok(
+      descriptor.styles.length > 0 && descriptor.styles.every((s) => s.scoped),
+      `${item.demoKey}.vue must use <style scoped>`
+    )
+
+    const compiledScript = compileScript(descriptor, { id: item.demoKey })
+    assert.match(
+      descriptor.scriptSetup.content,
+      /defineProps\(\s*\{[\s\S]*replayTick[\s\S]*default:\s*0[\s\S]*\}\s*\)/,
+      `${item.demoKey}.vue must define replayTick (default 0) prop`
+    )
+
+    if (entranceKeys.has(item.demoKey)) {
+      assert.match(
+        descriptor.scriptSetup.content,
+        /\bwatch\s*\(/,
+        `${item.demoKey}.vue must watch props.replayTick to replay entrance animation`
+      )
+    }
+
+    if (durResponsiveKeys.has(item.demoKey)) {
+      const combinedStyles = descriptor.styles.map((s) => s.content).join('\n')
+      assert.match(
+        combinedStyles,
+        /var\(--dur\b/,
+        `${item.demoKey}.vue <style scoped> must reference var(--dur) for global speed responsiveness`
+      )
+    }
+
+    const compiledTemplate = compileTemplate({
+      id: item.demoKey,
+      filename: `${item.demoKey}.vue`,
+      source: descriptor.template.content,
+      scoped: true,
+      compilerOptions: {
+        bindingMetadata: compiledScript.bindings
+      }
+    })
+    assert.equal(
+      compiledTemplate.errors.length,
+      0,
+      `${item.demoKey}.vue template compile errors: ${compiledTemplate.errors.join('; ')}`
+    )
+    assert.match(
+      descriptor.template.content,
+      /stage-badge/,
+      `${item.demoKey}.vue template must render .stage-badge`
+    )
+
+    for (const [idx, styleBlock] of descriptor.styles.entries()) {
+      const styleResult = compileStyle({
+        id: `data-v-${item.demoKey.toLowerCase()}-${idx}`,
+        filename: `${item.demoKey}.vue`,
+        source: styleBlock.content,
+        scoped: Boolean(styleBlock.scoped)
+      })
+      assert.equal(
+        styleResult.errors.length,
+        0,
+        `${item.demoKey}.vue style compile errors: ${styleResult.errors.map((e) => e.message).join('; ')}`
+      )
+    }
+  }
+})
+
+test('motions/index.js imports and exports MOTION_DEMO_MAP covering all 14 MOTION_ITEMS demoKeys', () => {
+  assert.ok(fs.existsSync(MOTIONS_INDEX_FILE), `Missing barrel file: ${MOTIONS_INDEX_FILE}`)
+  const indexSource = fs.readFileSync(MOTIONS_INDEX_FILE, 'utf8')
+
+  assert.match(
+    indexSource,
+    /export\s+const\s+MOTION_DEMO_MAP\s*=\s*\{/,
+    'motions/index.js must export MOTION_DEMO_MAP'
+  )
+
+  const mapBodyMatch = indexSource.match(/export\s+const\s+MOTION_DEMO_MAP\s*=\s*\{([\s\S]*?)\}/)
+  assert.ok(mapBodyMatch, 'Could not parse MOTION_DEMO_MAP object body')
+  const mapBody = mapBodyMatch[1]
+
+  for (const item of MOTION_ITEMS) {
+    const importRegex = new RegExp(
+      `import\\s+${item.demoKey}\\s+from\\s+['"]\\.\\/${item.demoKey}\\.vue['"]`
+    )
+    assert.match(
+      indexSource,
+      importRegex,
+      `motions/index.js must import ${item.demoKey} from './${item.demoKey}.vue'`
+    )
+    const keyRegex = new RegExp(`\\b${item.demoKey}\\b`)
+    assert.match(
+      mapBody,
+      keyRegex,
+      `MOTION_DEMO_MAP must include ${item.demoKey}`
+    )
+  }
+})
+
+test('stateful motion components register onUnmounted cleanup and stop click propagation on controls', () => {
+  const cleanupRequiredKeys = [
+    'MotionTextRotate',
+    'MotionHoverLift',
+    'MotionBorderGlow',
+    'MotionImageZoom',
+    'MotionStickyScroll',
+    'MotionParallax',
+    'MotionCountUp'
+  ]
+
+  for (const key of cleanupRequiredKeys) {
+    const source = fs.readFileSync(path.join(MOTIONS_DIR, `${key}.vue`), 'utf8')
+    assert.match(
+      source,
+      /\bonUnmounted\s*\(/,
+      `${key}.vue must register onUnmounted() lifecycle cleanup`
+    )
+  }
+
+  const interactiveKeys = [
+    'MotionFadeUp',
+    'MotionStagger',
+    'MotionZoomIn',
+    'MotionTextRotate',
+    'MotionHoverLift',
+    'MotionBorderGlow',
+    'MotionImageZoom',
+    'MotionAccordion',
+    'MotionTabSlide',
+    'MotionStickyScroll',
+    'MotionParallax',
+    'MotionCountUp'
+  ]
+
+  for (const key of interactiveKeys) {
+    const source = fs.readFileSync(path.join(MOTIONS_DIR, `${key}.vue`), 'utf8')
+    assert.match(
+      source,
+      /@click\.stop\b/,
+      `${key}.vue must stop click propagation (@click.stop) on interactive controls`
+    )
+  }
+})
+
+test('Vite programmatic in-memory build compiles motions/index.js and all 14 motion SFCs without errors', async () => {
+  const result = await build({
+    root: ROOT_DIR,
+    logLevel: 'silent',
+    build: {
+      write: false,
+      lib: {
+        entry: MOTIONS_INDEX_FILE,
+        formats: ['es'],
+        fileName: 'motions-bundle'
+      },
+      rollupOptions: {
+        external: ['vue']
+      }
+    }
+  })
+
+  const outputs = Array.isArray(result) ? result : [result]
+  assert.ok(outputs.length > 0 && outputs[0].output.length > 0, 'Expected non-empty Rollup bundle output')
+  const jsChunk = outputs[0].output.find((chunk) => chunk.type === 'chunk')
+  assert.ok(jsChunk, 'Expected compiled JS chunk for motions/index.js')
+  for (const item of MOTION_ITEMS) {
     assert.match(jsChunk.code, new RegExp(`\\b${item.demoKey}\\b`), `Bundle output missing ${item.demoKey}`)
   }
 })

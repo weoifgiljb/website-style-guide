@@ -1,0 +1,205 @@
+<script setup>
+import { ref, onUnmounted } from 'vue'
+
+defineProps({
+  replayTick: { type: Number, default: 0 }
+})
+
+const steps = [
+  {
+    label: '① 接入多渠道账号',
+    bg: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+    title: '画面 ① 多渠道聚合',
+    sub: '扫码或 API 快速接入'
+  },
+  {
+    label: '② 自动识别意图分流',
+    bg: 'linear-gradient(135deg, #0f766e, #10b981)',
+    title: '画面 ② 智能分流',
+    sub: 'AI 自动识别意图分配'
+  },
+  {
+    label: '③ 沉淀线索促进成交',
+    bg: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+    title: '画面 ③ 留资成交',
+    sub: '标签沉淀 + 跟进提醒'
+  }
+]
+
+const activeStep = ref(0)
+const leftRef = ref(null)
+let autoTimer = null
+
+function clearAutoTimer() {
+  if (autoTimer !== null) {
+    clearInterval(autoTimer)
+    autoTimer = null
+  }
+}
+
+function selectStep(idx, el) {
+  clearAutoTimer()
+  activeStep.value = idx
+  if (el && typeof el.scrollIntoView === 'function') {
+    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }
+}
+
+function onLeftScroll(e) {
+  if (autoTimer !== null) return
+  const el = e.currentTarget
+  if (!el) return
+  const max = el.scrollHeight - el.clientHeight
+  if (max <= 0) return
+  const ratio = el.scrollTop / max
+  activeStep.value = ratio < 0.34 ? 0 : ratio < 0.72 ? 1 : 2
+}
+
+function runAutoDemo() {
+  clearAutoTimer()
+  let step = 0
+  activeStep.value = 0
+  if (leftRef.value) {
+    leftRef.value.scrollTop = 0
+  }
+  autoTimer = setInterval(() => {
+    step += 1
+    if (step > 2) {
+      clearAutoTimer()
+      return
+    }
+    activeStep.value = step
+    if (leftRef.value) {
+      const max = Math.max(0, leftRef.value.scrollHeight - leftRef.value.clientHeight)
+      leftRef.value.scrollTop = Math.round((step / 2) * max)
+    }
+  }, 750)
+}
+
+onUnmounted(() => {
+  clearAutoTimer()
+})
+</script>
+
+<template>
+  <div class="motion-sticky-scroll">
+    <span class="stage-badge">滚左侧或点步骤</span>
+    <button type="button" class="stage-action" @click.stop="runAutoDemo">▶ 自动演示</button>
+    <div class="demo-sticky-box">
+      <div
+        ref="leftRef"
+        class="sticky-left"
+        @wheel="clearAutoTimer"
+        @touchmove="clearAutoTimer"
+        @scroll="onLeftScroll"
+      >
+        <div
+          v-for="(item, idx) in steps"
+          :key="item.label"
+          class="sticky-step"
+          :class="{ active: activeStep === idx }"
+          @click.stop="selectStep(idx, $event.currentTarget)"
+        >
+          {{ item.label }}
+        </div>
+      </div>
+      <div class="sticky-right">
+        <div :key="activeStep" class="sticky-screen" :style="{ background: steps[activeStep].bg }">
+          <div>{{ steps[activeStep].title }}</div>
+          <div class="sticky-sub">{{ steps[activeStep].sub }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.motion-sticky-scroll {
+  width: 100%;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-sticky-box {
+  width: 100%;
+  height: 128px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+.sticky-left {
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-right: 1px solid var(--border);
+  scroll-behavior: smooth;
+}
+
+.sticky-step {
+  padding: 14px 8px;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--dur, 0.28s) ease;
+}
+
+.sticky-step.active {
+  background: var(--primary-soft);
+  border-color: #93c5fd;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.sticky-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: #f8fafc;
+}
+
+.sticky-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  padding: 10px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  animation: screenSwap var(--dur, 0.28s) var(--ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.sticky-sub {
+  font-size: 10.5px;
+  font-weight: 400;
+  opacity: 0.92;
+  margin-top: 3px;
+}
+
+@keyframes screenSwap {
+  from {
+    opacity: 0.72;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
