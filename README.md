@@ -31,6 +31,11 @@ npm run preview
 - `src/composables/useCatalogStore.js`：目录筛选、双端视图切换、组合勾选、楼层排序与动效绑定状态管理
 - `src/utils/promptBuilder.js`：搜索过滤与 Codex 结构化楼层需求话术生成器
 - `tests/`：数据完整性、话术生成、组件注册与构建产物自动化测试
+- `docs/conventions/sfc-budget.md`：Vue 单文件行数上限（400 行）与复用约定。壳层大组件按界面区块拆分，样式跟组件走
+
+## 单文件怎么拆
+
+壳层组件（抽屉、悬停提示、竞品弹窗、楼层预览）按界面区块拆到 `src/components/shell/` 下的功能子目录。演示卡保持一卡一文件。阈值、目录和「只搬家、不改行为」的约定见 [docs/conventions/sfc-budget.md](docs/conventions/sfc-budget.md)。
 
 ## 如何新增一张版式或动效卡片
 

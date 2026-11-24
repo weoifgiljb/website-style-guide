@@ -1,8 +1,9 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { PAGE_PRESETS, ITEMS_BY_ID } from '../../data/index.js'
 import { buildPresetPrompt, MOTION_TOOLTIP_ANIM_MAP } from '../../utils/promptBuilder.js'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
+import { useAnchoredTooltip } from '../../composables/useAnchoredTooltip.js'
 import MotionTooltip from './MotionTooltip.vue'
 
 const {
@@ -14,15 +15,7 @@ const {
 } = useCatalogStore()
 
 const isCollapsed = ref(true)
-
-const tooltipState = reactive({
-  visible: false,
-  title: '',
-  badge: '',
-  tip: '',
-  anim: 'scroll-enter',
-  anchorRect: null
-})
+const { tooltipState, showTooltip, hideTooltip } = useAnchoredTooltip()
 
 const SHORT_LAYOUT_LABELS = {
   'S-01': '左文右图首屏',
@@ -107,36 +100,31 @@ const LAYOUT_ID_TO_SEC = {
 }
 
 function showPresetFloorTip(fl, floorIndex, totalFloors, event) {
-  if (!event?.currentTarget) return
-  const r = event.currentTarget.getBoundingClientRect()
   const layoutItem = ITEMS_BY_ID[fl.layoutId]
   const motionItem = fl.motionId ? ITEMS_BY_ID[fl.motionId] : null
 
   if (motionItem) {
-    tooltipState.title = `${motionItem.code} ${motionItem.name}`
-    tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏 · ${shortLayoutName(fl.layoutId)}`
-    tooltipState.tip = motionItem.shortPrompt
-    tooltipState.anim = MOTION_TOOLTIP_ANIM_MAP[fl.motionId] || 'scroll-enter'
-  } else if (layoutItem) {
-    tooltipState.title = `${layoutItem.code} ${shortLayoutName(fl.layoutId)}`
-    tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏位置`
-    tooltipState.tip = layoutItem.scene || layoutItem.prompt
-    tooltipState.anim = LAYOUT_ID_TO_SEC[fl.layoutId] || 'sec-feature'
-  } else {
+    showTooltip({
+      title: `${motionItem.code} ${motionItem.name}`,
+      badge: `第 ${floorIndex + 1}/${totalFloors} 屏 · ${shortLayoutName(fl.layoutId)}`,
+      tip: motionItem.shortPrompt,
+      anim: MOTION_TOOLTIP_ANIM_MAP[fl.motionId] || 'scroll-enter',
+      currentTarget: event?.currentTarget
+    })
     return
   }
-
-  tooltipState.anchorRect = {
-    top: r.top,
-    bottom: r.bottom,
-    left: r.left,
-    width: r.width
-  }
-  tooltipState.visible = true
+  if (!layoutItem) return
+  showTooltip({
+    title: `${layoutItem.code} ${shortLayoutName(fl.layoutId)}`,
+    badge: `第 ${floorIndex + 1}/${totalFloors} 屏位置`,
+    tip: layoutItem.scene || layoutItem.prompt,
+    anim: LAYOUT_ID_TO_SEC[fl.layoutId] || 'sec-feature',
+    currentTarget: event?.currentTarget
+  })
 }
 
 function hidePresetMotionTip() {
-  tooltipState.visible = false
+  hideTooltip()
 }
 
 function handlePreviewPreset(presetId) {

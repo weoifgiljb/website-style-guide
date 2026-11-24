@@ -1,12 +1,10 @@
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import {
-  COMPETITOR_SECTION_OPTIONS,
-  COMPETITOR_TRIGGER_OPTIONS,
-  COMPETITOR_VISUAL_OPTIONS
-} from '../../utils/promptBuilder.js'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
+import { useAnchoredTooltip } from '../../composables/useAnchoredTooltip.js'
 import MotionTooltip from './MotionTooltip.vue'
+import CompetitorSourceForm from './competitor/CompetitorSourceForm.vue'
+import CompetitorOptionPicker from './competitor/CompetitorOptionPicker.vue'
 
 const {
   isCompetitorModalOpen,
@@ -17,77 +15,18 @@ const {
   copyText
 } = useCatalogStore()
 
+const { tooltipState, showTooltip, hideTooltip } = useAnchoredTooltip()
 const showRawPrompt = ref(false)
 
-const tooltipState = reactive({
-  visible: false,
-  title: '',
-  badge: '',
-  tip: '',
-  anim: 'scroll-enter',
-  anchorRect: null
-})
-
-const QUICK_EXAMPLES = [
-  {
-    label: 'Fin.ai 对话流',
-    sourceMode: 'url',
-    competitorUrl: 'https://fin.ai',
-    anchorText: 'Resolve complex queries',
-    sectionArea: 'hero',
-    triggers: ['scroll-enter'],
-    visualFocus: ['stagger-stream'],
-    extraNote: '只要气泡弹出节奏，改成官网浅蓝风格'
-  },
-  {
-    label: 'Respond.io 流光',
-    sourceMode: 'url',
-    competitorUrl: 'https://respond.io',
-    anchorText: 'Capture conversations from every channel',
-    sectionArea: 'flow-diagram',
-    triggers: ['loop-pulse'],
-    visualFocus: ['path-pulse'],
-    extraNote: '参考多渠道流向中间收件箱的流光'
-  },
-  {
-    label: '小众站滚动切图',
-    sourceMode: 'url',
-    competitorUrl: 'https://attio.com',
-    anchorText: 'A CRM that adapts to your business',
-    sectionArea: 'feature-demo',
-    triggers: ['scroll-scrub', 'auto-progress'],
-    visualFocus: ['pin-swap'],
-    extraNote: '看它滚动时怎么做到不跳动'
-  }
-]
-
 function showMotionTip(opt, event) {
-  if (!opt.anim || !event?.currentTarget) return
-  const r = event.currentTarget.getBoundingClientRect()
-  tooltipState.title = opt.shortLabel
-  tooltipState.badge = opt.whereTag || ''
-  tooltipState.tip = opt.tip
-  tooltipState.anim = opt.anim
-  tooltipState.anchorRect = {
-    top: r.top,
-    bottom: r.bottom,
-    left: r.left,
-    width: r.width
-  }
-  tooltipState.visible = true
-}
-
-function hideMotionTip() {
-  tooltipState.visible = false
-}
-
-function toggleMultiItem(list, id) {
-  const idx = list.indexOf(id)
-  if (idx !== -1) {
-    list.splice(idx, 1)
-  } else {
-    list.push(id)
-  }
+  if (!opt?.anim) return
+  showTooltip({
+    title: opt.shortLabel,
+    badge: opt.whereTag || '',
+    tip: opt.tip,
+    anim: opt.anim,
+    currentTarget: event?.currentTarget
+  })
 }
 
 function applyExample(ex) {
@@ -101,7 +40,7 @@ function applyExample(ex) {
 }
 
 function handleClose() {
-  hideMotionTip()
+  hideTooltip()
   closeCompetitorModal()
 }
 
@@ -133,8 +72,7 @@ onUnmounted(() => {
     aria-label="参考外部网站动效"
     @click.self="handleClose()"
   >
-    <div class="modal-panel" @scroll.passive="hideMotionTip">
-      <!-- Header -->
+    <div class="modal-panel" @scroll.passive="hideTooltip">
       <div class="modal-topbar">
         <div class="topbar-main">
           <div class="modal-title">🔍 抄外部网站动效</div>
@@ -151,174 +89,12 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <!-- Body -->
-      <div class="modal-body" @scroll.passive="hideMotionTip">
-        <!-- Quick Fill Bar -->
-        <div class="example-row">
-          <span class="example-label">试试填入：</span>
-          <button
-            v-for="ex in QUICK_EXAMPLES"
-            :key="ex.label"
-            type="button"
-            class="example-chip"
-            @click="applyExample(ex)"
-          >
-            {{ ex.label }}
-          </button>
-        </div>
-
-        <!-- Step 1: Source -->
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-title">① 参考来源</span>
-            <div class="mode-pills" role="group" aria-label="素材方式">
-              <button
-                type="button"
-                class="mode-pill"
-                :class="{ active: competitorDraft.sourceMode === 'url' }"
-                @click="competitorDraft.sourceMode = 'url'"
-              >
-                🌐 填网页链接
-              </button>
-              <button
-                type="button"
-                class="mode-pill"
-                :class="{ active: competitorDraft.sourceMode === 'screenshots' }"
-                @click="competitorDraft.sourceMode = 'screenshots'"
-              >
-                🖼 发录屏截图
-              </button>
-            </div>
-          </div>
-
-          <div v-if="competitorDraft.sourceMode === 'url'" class="two-cols">
-            <div>
-              <label class="mini-label" for="compUrlInput">参考网址</label>
-              <input
-                id="compUrlInput"
-                v-model="competitorDraft.competitorUrl"
-                type="url"
-                class="text-input"
-                placeholder="粘贴网址，如 https://fin.ai"
-              />
-            </div>
-
-            <div>
-              <label class="mini-label" for="compAnchorInput">
-                那块的一句原文词
-                <em class="tag-green">帮 AI 找准位置</em>
-              </label>
-              <input
-                id="compAnchorInput"
-                v-model="competitorDraft.anchorText"
-                type="text"
-                class="text-input"
-                placeholder="复制那块的一句标题词粘贴进来"
-              />
-            </div>
-          </div>
-
-          <div v-else class="shot-banner">
-            📸 复制话术发给 Agent 时，顺手贴上 <b>「动之前 + 动完后」2～3 张截图</b>，Agent 会自动对比分析。
-          </div>
-        </div>
-
-        <!-- Step 2: Motion Feel with Hover Animated Tooltips -->
-        <div class="step-card">
-          <div class="step-head">
-            <span class="step-title">② 选你看到的动效感觉</span>
-            <span class="hover-hint">✨ 鼠标移到下方任意标签，可看位置图 & 实时动效演示</span>
-          </div>
-
-          <div class="option-row">
-            <span class="row-label">在哪个位置</span>
-            <div class="pill-wrap">
-              <button
-                v-for="sec in COMPETITOR_SECTION_OPTIONS"
-                :key="sec.id"
-                type="button"
-                class="choice-pill has-anim"
-                :class="{ active: competitorDraft.sectionArea === sec.id }"
-                @mouseenter="showMotionTip(sec, $event)"
-                @mouseleave="hideMotionTip()"
-                @focus="showMotionTip(sec, $event)"
-                @blur="hideMotionTip()"
-                @click="competitorDraft.sectionArea = sec.id"
-              >
-                <i class="loc-dot">⌖</i>
-                <span>{{ sec.shortLabel }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="option-row">
-            <span class="row-label">怎么触发的</span>
-            <div class="pill-wrap">
-              <button
-                v-for="tr in COMPETITOR_TRIGGER_OPTIONS"
-                :key="tr.id"
-                type="button"
-                class="choice-pill has-anim"
-                :class="{ active: competitorDraft.triggers.includes(tr.id) }"
-                @mouseenter="showMotionTip(tr, $event)"
-                @mouseleave="hideMotionTip()"
-                @focus="showMotionTip(tr, $event)"
-                @blur="hideMotionTip()"
-                @click="toggleMultiItem(competitorDraft.triggers, tr.id)"
-              >
-                <i class="play-dot">▶</i>
-                <span>{{ tr.shortLabel }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="option-row">
-            <span class="row-label">什么效果</span>
-            <div class="pill-wrap">
-              <button
-                v-for="vis in COMPETITOR_VISUAL_OPTIONS"
-                :key="vis.id"
-                type="button"
-                class="choice-pill has-anim"
-                :class="{ active: competitorDraft.visualFocus.includes(vis.id) }"
-                @mouseenter="showMotionTip(vis, $event)"
-                @mouseleave="hideMotionTip()"
-                @focus="showMotionTip(vis, $event)"
-                @blur="hideMotionTip()"
-                @click="toggleMultiItem(competitorDraft.visualFocus, vis.id)"
-              >
-                <i class="play-dot">▶</i>
-                <span>{{ vis.shortLabel }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: Optional Target & Note -->
-        <div class="two-cols compact-extra">
-          <div>
-            <label class="mini-label" for="compTargetInput">用于哪个官网页（选填）</label>
-            <input
-              id="compTargetInput"
-              v-model="competitorDraft.targetPage"
-              type="text"
-              class="text-input"
-              placeholder="如 /features/ai-agents"
-            />
-          </div>
-          <div>
-            <label class="mini-label" for="compExtraInput">补充要求（选填）</label>
-            <input
-              id="compExtraInput"
-              v-model="competitorDraft.extraNote"
-              type="text"
-              class="text-input"
-              placeholder="如：改成官网白底蓝字"
-            />
-          </div>
-        </div>
-
-        <!-- Collapsible Raw Prompt (Hidden by default so UI stays super clean!) -->
+      <div class="modal-body" @scroll.passive="hideTooltip">
+        <CompetitorSourceForm @apply-example="applyExample" />
+        <CompetitorOptionPicker
+          @hover-option="showMotionTip"
+          @leave-option="hideTooltip"
+        />
         <div class="raw-prompt-box">
           <button
             type="button"
@@ -339,7 +115,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Footer -->
       <div class="modal-footer">
         <button
           type="button"
@@ -364,6 +139,7 @@ onUnmounted(() => {
       :badge="tooltipState.badge"
       :tip="tooltipState.tip"
       :anim="tooltipState.anim"
+      :placement="tooltipState.placement"
       :anchor-rect="tooltipState.anchorRect"
     />
   </div>
@@ -447,207 +223,6 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 
-.example-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-
-.example-label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.example-chip {
-  border: 1px solid #c7d2fe;
-  background: #eef2ff;
-  color: #4338ca;
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.16s ease;
-}
-
-.example-chip:hover {
-  background: #4338ca;
-  color: #ffffff;
-}
-
-.step-card {
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.step-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.step-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.hover-hint {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--primary);
-  background: var(--primary-soft);
-  border: 1px solid #bfdbfe;
-  padding: 2px 9px;
-  border-radius: 999px;
-}
-
-.mode-pills {
-  display: inline-flex;
-  background: #e2e8f0;
-  padding: 2px;
-  border-radius: 8px;
-}
-
-.mode-pill {
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.mode-pill.active {
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.two-cols {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.mini-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.tag-green {
-  font-style: normal;
-  font-size: 10px;
-  font-weight: 700;
-  color: #047857;
-  background: var(--accent-soft);
-  border: 1px solid #a7f3d0;
-  padding: 0 6px;
-  border-radius: 999px;
-}
-
-.text-input {
-  width: 100%;
-  margin-top: 4px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-size: 12.5px;
-  color: var(--text);
-  outline: none;
-}
-
-.text-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-.shot-banner {
-  background: var(--warn-soft);
-  border: 1px solid #fde68a;
-  color: #92400e;
-  border-radius: 9px;
-  padding: 8px 11px;
-  font-size: 12px;
-}
-
-.option-row {
-  display: grid;
-  grid-template-columns: 74px 1fr;
-  align-items: center;
-  gap: 8px;
-}
-
-.row-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.pill-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.choice-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.16s ease;
-}
-
-.choice-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-.choice-pill.active {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: var(--primary);
-  font-weight: 700;
-}
-
-.play-dot,
-.loc-dot {
-  font-style: normal;
-  font-size: 9px;
-  opacity: 0.58;
-}
-
-.choice-pill:hover .play-dot,
-.choice-pill.active .play-dot,
-.choice-pill:hover .loc-dot,
-.choice-pill.active .loc-dot {
-  opacity: 1;
-  color: var(--primary);
-}
-
 .raw-prompt-box {
   border: 1px dashed var(--border-strong);
   border-radius: 10px;
@@ -723,15 +298,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 640px) {
-  .two-cols {
-    grid-template-columns: 1fr;
-  }
-
-  .option-row {
-    grid-template-columns: 1fr;
-    gap: 5px;
-  }
-
   .modal-footer {
     flex-direction: column-reverse;
   }

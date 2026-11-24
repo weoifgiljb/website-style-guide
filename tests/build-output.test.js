@@ -191,26 +191,35 @@ test('shell components enforce decluttered 2-col layout, dual-viewport switching
   assert.match(presetStrip, /const\s+isCollapsed\s*=\s*ref\(\s*true\s*\)/, 'PresetShowcaseStrip must collapse by default so cards show above the fold')
 
   const drawer = fs.readFileSync(path.join(SHELL_DIR, 'PageBlueprintDrawer.vue'), 'utf8')
+  const drawerTopBar = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'BlueprintTopBar.vue'), 'utf8')
+  const motionPicker = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'FloorMotionPicker.vue'), 'utf8')
+  const drawerCanvas = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'BlueprintCanvas.vue'), 'utf8')
+  const deviceFrame = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'BlueprintDeviceFrame.vue'), 'utf8')
+  const standaloneMotions = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'StandaloneMotionsPreview.vue'), 'utf8')
   assert.match(drawer, /MotionTooltip/, 'PageBlueprintDrawer must render MotionTooltip for floor motion hover previews')
-  assert.match(drawer, /toggleFloorMotion/, 'PageBlueprintDrawer must support multi-selecting motions per floor')
-  assert.match(drawer, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'PageBlueprintDrawer must render exact title')
-  assert.match(drawer, /PAGE_PRESETS/, 'PageBlueprintDrawer must render quick presets')
-  assert.match(drawer, /BlueprintFloorPreview/, 'PageBlueprintDrawer must render floors via BlueprintFloorPreview')
-  assert.match(drawer, /unboundSelectedMotions/, 'PageBlueprintDrawer must render standalone unboundSelectedMotions preview')
-  assert.match(drawer, /width:\s*402px/, 'PageBlueprintDrawer phone frame must be 402px (390px inner + 12px bezel)')
-  assert.match(drawer, /:for=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind label :for on floor motion select')
-  assert.match(drawer, /:id=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind :id on floor motion select')
+  assert.match(motionPicker, /toggleFloorMotion/, 'Floor motion picker must support multi-selecting motions per floor')
+  assert.match(drawerTopBar, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'Blueprint top bar must render exact title')
+  assert.match(drawerTopBar, /PAGE_PRESETS/, 'Blueprint top bar must render quick presets')
+  assert.match(drawerCanvas, /BlueprintFloorPreview/, 'Blueprint canvas must render floors via BlueprintFloorPreview')
+  assert.match(standaloneMotions, /unboundSelectedMotions/, 'Standalone preview must render unboundSelectedMotions')
+  assert.match(deviceFrame, /width:\s*402px/, 'Phone frame must be 402px (390px inner + 12px bezel)')
+  assert.match(motionPicker, /:for=["']'floor-motion-'\s*\+\s*layoutId["']/, 'Floor motion picker must bind label :for')
+  assert.match(motionPicker, /:id=["']'floor-motion-'\s*\+\s*layoutId["']/, 'Floor motion picker must bind :id')
   assert.match(drawer, /Escape/, 'PageBlueprintDrawer must support Escape key to close')
   assert.match(drawer, /onUnmounted/, 'PageBlueprintDrawer must clean up listeners & body scroll lock onUnmounted')
 
   const floorPreview = fs.readFileSync(path.join(SHELL_DIR, 'BlueprintFloorPreview.vue'), 'utf8')
+  const floorOverlay = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'FloorMotionOverlay.vue'), 'utf8')
+  const floorPlayers = fs.readFileSync(path.join(ROOT_DIR, 'src', 'composables', 'useFloorMotionPlayers.js'), 'utf8')
+  const floorSources = `${floorPreview}\n${floorOverlay}\n${floorPlayers}`
   assert.match(floorPreview, /LAYOUT_DEMO_MAP/, 'BlueprintFloorPreview must render live floor layouts with LAYOUT_DEMO_MAP')
-  assert.match(floorPreview, /\bonUnmounted\s*\(/, 'BlueprintFloorPreview must register onUnmounted cleanup')
+  assert.match(floorPlayers, /\bonUnmounted\s*\(/, 'Floor motion players must register onUnmounted cleanup')
+  assert.match(floorPreview, /useFloorMotionPlayers/, 'BlueprintFloorPreview must use the shared floor motion players')
   for (const m of MOTION_ITEMS) {
     assert.match(
-      floorPreview,
+      floorSources,
       new RegExp(`['"]${m.id}['"]`),
-      `BlueprintFloorPreview.vue must handle motion ${m.id}`
+      `Floor preview must handle motion ${m.id}`
     )
   }
 })
