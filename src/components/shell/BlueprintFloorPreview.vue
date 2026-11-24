@@ -14,13 +14,14 @@ const props = defineProps({
 const CHANNELS = ['WhatsApp', 'Messenger', 'Instagram', 'LINE']
 const TABS = ['场景 A · 获客', '场景 B · 接待', '场景 C · 复购']
 const STICKY_STEPS = ['① 接入账号', '② 智能分流', '③ 沉淀转化']
+const AUTO_TABS = ['① AI 意图分流', '② 多语实时互译', '③ 广告归因回传']
 const MARQUEE_CHANNELS = ['WhatsApp', 'Messenger', 'Instagram', 'Telegram', 'LINE', 'TikTok']
 
 const motionId = computed(() => props.motionItem?.id || '')
 const isEntranceMotion = computed(() => ['M-01', 'M-02', 'M-03'].includes(motionId.value))
 
 const actionLabel = computed(() => {
-  if (['M-01', 'M-02', 'M-03', 'M-12'].includes(motionId.value)) return '↻ 重播'
+  if (['M-01', 'M-02', 'M-03', 'M-12', 'M-15', 'M-17'].includes(motionId.value)) return '↻ 重播'
   if (motionId.value === 'M-04') return '⇄ 切模式'
   return '▶ 演示动效'
 })
@@ -34,6 +35,10 @@ const accordionOpen = ref(false)
 const activeTab = ref(0)
 const tabFading = ref(false)
 const stickyStep = ref(0)
+const autoTabIdx = ref(0)
+const autoTabProgress = ref(0)
+const flowPhase = ref(0)
+const chatStep = ref(0)
 const parallaxWave = ref(0)
 const metrics = reactive({ stability: '99.9', companies: '12,800', speed: '3.5' })
 
@@ -41,6 +46,8 @@ let demoTimer = null
 let rotateTimer = null
 let typeTimer = null
 let tabTimer = null
+let autoTabTimer = null
+let flowTimer = null
 const stepTimers = []
 let countRaf = null
 let parallaxRaf = null
@@ -48,6 +55,8 @@ let parallaxRaf = null
 function clearTransientTimers() {
   if (demoTimer) { clearTimeout(demoTimer); demoTimer = null }
   if (tabTimer) { clearTimeout(tabTimer); tabTimer = null }
+  if (autoTabTimer) { clearInterval(autoTabTimer); autoTabTimer = null }
+  if (flowTimer) { clearInterval(flowTimer); flowTimer = null }
   while (stepTimers.length) clearTimeout(stepTimers.pop())
   if (countRaf) { cancelAnimationFrame(countRaf); countRaf = null }
   if (parallaxRaf) { cancelAnimationFrame(parallaxRaf); parallaxRaf = null }
@@ -151,6 +160,41 @@ function playStickySequence() {
   stepTimers.push(setTimeout(() => { stickyStep.value = 2 }, 840))
 }
 
+function startAutoTabs() {
+  if (autoTabTimer) clearInterval(autoTabTimer)
+  autoTabIdx.value = 0
+  autoTabProgress.value = 0
+  autoTabTimer = setInterval(() => {
+    const next = autoTabProgress.value + 5
+    if (next >= 100) {
+      autoTabIdx.value = (autoTabIdx.value + 1) % AUTO_TABS.length
+      autoTabProgress.value = 0
+    } else {
+      autoTabProgress.value = next
+    }
+  }, 150)
+}
+
+function pickAutoTab(idx) {
+  autoTabIdx.value = idx
+  autoTabProgress.value = 0
+}
+
+function startChannelFlow() {
+  if (flowTimer) clearInterval(flowTimer)
+  flowPhase.value = 0
+  flowTimer = setInterval(() => {
+    flowPhase.value = (flowPhase.value + 1) % 3
+  }, 800)
+}
+
+function playChatStream() {
+  while (stepTimers.length) clearTimeout(stepTimers.pop())
+  chatStep.value = 1
+  stepTimers.push(setTimeout(() => { chatStep.value = 2 }, 400))
+  stepTimers.push(setTimeout(() => { chatStep.value = 3 }, 980))
+}
+
 function runBoundMotion(isManualClick = false) {
   clearTransientTimers()
   isDemoActive.value = false
@@ -176,6 +220,12 @@ function runBoundMotion(isManualClick = false) {
     runParallaxWave()
   } else if (id === 'M-12') {
     runCountUp()
+  } else if (id === 'M-15') {
+    startAutoTabs()
+  } else if (id === 'M-16') {
+    startChannelFlow()
+  } else if (id === 'M-17') {
+    playChatStream()
   }
 }
 
@@ -301,14 +351,49 @@ onUnmounted(() => {
         </button>
       </div>
 
+      <!-- M-15 Auto-Progress Tabs Strip -->
+      <div v-if="motionId === 'M-15'" class="bp-autotabs-bar">
+        <button
+          v-for="(tLabel, aIdx) in AUTO_TABS"
+          :key="tLabel"
+          type="button"
+          class="bp-autotab-btn"
+          :class="{ active: autoTabIdx === aIdx }"
+          @click="pickAutoTab(aIdx)"
+        >
+          <span>{{ tLabel }}</span>
+          <i
+            class="bp-autotab-line"
+            :style="{ width: autoTabIdx === aIdx ? `${autoTabProgress}%` : '0%' }"
+          ></i>
+        </button>
+      </div>
+
+      <!-- M-16 Omnichannel Routing Flow Strip -->
+      <div v-if="motionId === 'M-16'" class="bp-flow-strip">
+        <span class="bp-flow-node" :class="{ lit: flowPhase === 0 }">WhatsApp / IG / TikTok</span>
+        <span class="bp-flow-beam"></span>
+        <span class="bp-flow-node hub" :class="{ lit: flowPhase === 1 }">AI 统一路由中枢</span>
+        <span class="bp-flow-beam"></span>
+        <span class="bp-flow-node target" :class="{ lit: flowPhase === 2 }">自动翻译 + 分配坐席</span>
+      </div>
+
+      <!-- M-17 AI Chat Reply Stream Strip -->
+      <div v-if="motionId === 'M-17'" class="bp-chat-strip">
+        <span v-if="chatStep >= 1" class="bp-chat-pill buyer">买：¿Cambiar talla a M?</span>
+        <span v-if="chatStep === 2" class="bp-chat-pill thinking">AI 检索订单库 ···</span>
+        <span v-if="chatStep >= 3" class="bp-chat-pill ai">✓ AI 西语秒回：已改 M 码</span>
+      </div>
+
       <!-- Core Layout Host -->
       <div
         class="floor-layout-host"
         :class="{
           'is-zoom-clip': motionId === 'M-07',
           'is-tab-fade': motionId === 'M-09' && tabFading,
-          'has-sticky-step': motionId === 'M-10',
-          [`sticky-accent-${stickyStep}`]: motionId === 'M-10'
+          'has-sticky-step': motionId === 'M-10' || motionId === 'M-15',
+          [`sticky-accent-${stickyStep}`]: motionId === 'M-10',
+          [`sticky-accent-${autoTabIdx}`]: motionId === 'M-15'
         }"
       >
         <component
@@ -620,6 +705,52 @@ onUnmounted(() => {
 .bp-float-bar.is-mobile .bp-float-bubble { animation: none; }
 .bp-float-bar.is-boost .bp-float-bubble { border-color: var(--primary); box-shadow: var(--shadow-hover); }
 
+/* M-15 Auto-Progress Tabs */
+.bp-autotabs-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.bp-autotab-btn {
+  position: relative; overflow: hidden; border: 1px solid var(--border);
+  background: var(--surface-soft); color: var(--text-secondary);
+  font-size: 10.5px; font-weight: 600; padding: 4px 6px 6px; border-radius: 6px; cursor: pointer;
+}
+.bp-autotab-btn.active { background: #ffffff; border-color: #93c5fd; color: var(--primary); }
+.bp-autotab-line {
+  position: absolute; left: 0; bottom: 0; height: 2px; background: var(--primary);
+  transition: width 0.14s linear;
+}
+
+/* M-16 Channel Flow Strip */
+.bp-flow-strip {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px;
+  padding: 5px 9px; border-radius: 7px; background: var(--surface-soft); border: 1px solid var(--border);
+}
+.bp-flow-node {
+  font-size: 10px; font-weight: 600; color: var(--text-secondary);
+  background: #ffffff; border: 1px solid var(--border); padding: 2px 7px; border-radius: 999px;
+  transition: all var(--dur, 0.28s) var(--ease);
+}
+.bp-flow-node.lit { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15); }
+.bp-flow-node.target.lit { border-color: var(--accent); color: #047857; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16); }
+.bp-flow-beam {
+  flex: 1 1 24px; height: 2px; border-radius: 999px;
+  background: linear-gradient(90deg, #cbd5e1 0%, var(--primary) 50%, #cbd5e1 100%);
+  background-size: 200% 100%; animation: bpBeam 1.6s linear infinite;
+}
+
+/* M-17 Chat Reply Stream */
+.bp-chat-strip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 5px 9px; border-radius: 7px; background: var(--surface-soft); border: 1px solid var(--border);
+  min-height: 30px;
+}
+.bp-chat-pill {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  animation: bpWordIn var(--dur, 0.28s) var(--ease) both;
+}
+.bp-chat-pill.buyer { background: #ffffff; border: 1px solid var(--border); color: var(--text-secondary); }
+.bp-chat-pill.thinking { background: var(--primary-soft); border: 1px solid #bfdbfe; color: var(--primary); }
+.bp-chat-pill.ai { background: var(--accent-soft); border: 1px solid #a7f3d0; color: #047857; }
+
+@keyframes bpBeam { from { background-position: 200% 0; } to { background-position: 0% 0; } }
 @keyframes bpFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes bpZoomIn { from { opacity: 0; transform: scale(0.86); } to { opacity: 1; transform: scale(1); } }
 @keyframes bpWordIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

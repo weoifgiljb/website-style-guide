@@ -186,9 +186,9 @@ test('Vite programmatic in-memory build compiles layouts/index.js and all 14 SFC
 })
 
 test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with replayTick & viewport props, stage-badge, and .is-mobile styles', () => {
-  assert.equal(MOTION_ITEMS.length, 14)
+  assert.equal(MOTION_ITEMS.length, 17)
 
-  const entranceKeys = new Set(['MotionFadeUp', 'MotionStagger', 'MotionZoomIn'])
+  const entranceKeys = new Set(['MotionFadeUp', 'MotionStagger', 'MotionZoomIn', 'MotionChatStream'])
   const durResponsiveKeys = new Set([
     'MotionFadeUp',
     'MotionStagger',
@@ -200,7 +200,10 @@ test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
     'MotionAccordion',
     'MotionTabSlide',
     'MotionStickyScroll',
-    'MotionParallax'
+    'MotionParallax',
+    'MotionAutoProgressTabs',
+    'MotionChannelFlow',
+    'MotionChatStream'
   ])
 
   for (const item of MOTION_ITEMS) {
@@ -295,7 +298,7 @@ test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
   }
 })
 
-test('motions/index.js imports and exports MOTION_DEMO_MAP covering all 14 MOTION_ITEMS demoKeys', () => {
+test('motions/index.js imports and exports MOTION_DEMO_MAP covering all 17 MOTION_ITEMS demoKeys', () => {
   assert.ok(fs.existsSync(MOTIONS_INDEX_FILE), `Missing barrel file: ${MOTIONS_INDEX_FILE}`)
   const indexSource = fs.readFileSync(MOTIONS_INDEX_FILE, 'utf8')
 
@@ -335,7 +338,10 @@ test('stateful motion components register onUnmounted cleanup and stop click pro
     'MotionImageZoom',
     'MotionStickyScroll',
     'MotionParallax',
-    'MotionCountUp'
+    'MotionCountUp',
+    'MotionAutoProgressTabs',
+    'MotionChannelFlow',
+    'MotionChatStream'
   ]
 
   for (const key of cleanupRequiredKeys) {
@@ -359,7 +365,10 @@ test('stateful motion components register onUnmounted cleanup and stop click pro
     'MotionTabSlide',
     'MotionStickyScroll',
     'MotionParallax',
-    'MotionCountUp'
+    'MotionCountUp',
+    'MotionAutoProgressTabs',
+    'MotionChannelFlow',
+    'MotionChatStream'
   ]
 
   for (const key of interactiveKeys) {
@@ -564,8 +573,8 @@ test('pitfalls/index.js imports and exports PITFALL_DEMO_MAP covering all 6 PITF
   }
 })
 
-test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT_DEMO_MAP, MOTION_DEMO_MAP, PITFALL_DEMO_MAP covering all 34 ALL_ITEMS keys', async () => {
-  assert.equal(ALL_ITEMS.length, 34)
+test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT_DEMO_MAP, MOTION_DEMO_MAP, PITFALL_DEMO_MAP covering all 37 ALL_ITEMS keys', async () => {
+  assert.equal(ALL_ITEMS.length, 37)
   assert.ok(fs.existsSync(MASTER_INDEX_FILE), `Missing master barrel file: ${MASTER_INDEX_FILE}`)
 
   const masterSource = fs.readFileSync(MASTER_INDEX_FILE, 'utf8')
@@ -616,5 +625,5 @@ test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT
   assert.deepEqual(Object.keys(mod.MOTION_DEMO_MAP).sort(), expectedMotionKeys)
   assert.deepEqual(Object.keys(mod.PITFALL_DEMO_MAP).sort(), expectedPitfallKeys)
   assert.deepEqual(Object.keys(mod.DEMO_COMPONENTS).sort(), expectedAllKeys)
-  assert.equal(Object.keys(mod.DEMO_COMPONENTS).length, 34)
+  assert.equal(Object.keys(mod.DEMO_COMPONENTS).length, 37)
 })

@@ -44,9 +44,9 @@ export const CATEGORIES = [
     id: 'loop',
     tabLabel: '循环展示',
     label: '循环展示',
-    sectionTitle: '持续循环动效',
+    sectionTitle: '持续循环与轮播流转动效',
     sectionNum: '4',
-    sectionDesc: '低幅度克制循环，鼠标移入可暂停'
+    sectionDesc: '低幅度克制循环与自动读条，鼠标移入可暂停'
   },
   {
     id: 'pitfall',
@@ -62,6 +62,7 @@ export const CATEGORIES = [
 export const PAGE_PRESETS = [
   {
     id: 'standard-feature',
+    tag: '百搭高频',
     name: '常规功能页标准 5 屏',
     desc: '左文右图首屏 → 三栏价值 → 左右交替 → FAQ → 底部收口',
     floors: [
@@ -74,7 +75,22 @@ export const PAGE_PRESETS = [
     extraIds: ['P-04']
   },
   {
+    id: 'saas-ai-flagship',
+    tag: 'Intercom / Respond.io 风',
+    name: 'AI 全渠道旗舰专题页 5 屏',
+    desc: 'AI 对话流首屏 → 全渠道流光汇聚 → 自动读条轮播 → 递增指标 → 底部收口',
+    floors: [
+      { layoutId: 'S-01', motionId: 'M-17' },
+      { layoutId: 'S-04', motionId: 'M-16' },
+      { layoutId: 'S-13', motionId: 'M-15' },
+      { layoutId: 'S-05', motionId: 'M-12' },
+      { layoutId: 'S-06', motionId: 'M-06' }
+    ],
+    extraIds: ['P-05']
+  },
+  {
     id: 'comparison-landing',
+    tag: '广告转化页',
     name: '方案对比转化页 6 屏',
     desc: '居中大图首屏 → 优劣对比 → 三步流程 → 数据横幅 → 客户证言 → 底部收口',
     floors: [
@@ -89,6 +105,7 @@ export const PAGE_PRESETS = [
   },
   {
     id: 'flagship-showcase',
+    tag: '多角色方案页',
     name: '多场景旗舰专题页 6 屏',
     desc: '轮换词首屏 → 渠道矩阵 → Bento 网格 → 角色 Tab → 套餐定价 → 底部收口',
     floors: [

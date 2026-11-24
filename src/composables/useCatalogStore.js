@@ -1,6 +1,10 @@
 import { ref, reactive, computed } from 'vue'
 import { ALL_ITEMS, ITEMS_BY_ID, PAGE_PRESETS } from '../data/index.js'
-import { filterCatalogItems, buildCodexPrompt } from '../utils/promptBuilder.js'
+import {
+  filterCatalogItems,
+  buildCodexPrompt,
+  buildCompetitorInspectPrompt
+} from '../utils/promptBuilder.js'
 
 const speed = ref('0.28s')
 const replayTick = ref(0)
@@ -12,11 +16,25 @@ const floorOrder = ref([])
 const floorMotionMap = reactive({})
 const pageTarget = ref('')
 const isDrawerOpen = ref(false)
+const isCompetitorModalOpen = ref(false)
 const previewViewport = ref('desktop')
 const cardViewport = ref('desktop')
 const cardViewportVersion = ref(0)
 const toastMessage = ref('')
 const toastVisible = ref(false)
+
+const competitorDraft = reactive({
+  sourceMode: 'url',
+  competitorUrl: '',
+  anchorText: '',
+  targetPage: '',
+  sectionArea: 'feature-demo',
+  triggers: ['scroll-enter'],
+  visualFocus: ['pin-swap'],
+  extraNote: ''
+})
+
+const attachedCompetitorRef = ref(null)
 
 let toastTimer = null
 
@@ -36,13 +54,27 @@ const selectedMotionCount = computed(
   () => selectedItems.value.filter((item) => item.kind === 'motion').length
 )
 
+const competitorInspectPrompt = computed(() =>
+  buildCompetitorInspectPrompt({
+    sourceMode: competitorDraft.sourceMode,
+    competitorUrl: competitorDraft.competitorUrl,
+    anchorText: competitorDraft.anchorText,
+    targetPage: competitorDraft.targetPage || pageTarget.value,
+    sectionArea: competitorDraft.sectionArea,
+    triggers: competitorDraft.triggers,
+    visualFocus: competitorDraft.visualFocus,
+    extraNote: competitorDraft.extraNote
+  })
+)
+
 const generatedPrompt = computed(() =>
   buildCodexPrompt({
     pageTarget: pageTarget.value,
     floorOrder: floorOrder.value,
     floorMotionMap,
     selectedIds: selectedIds.value,
-    itemsById: ITEMS_BY_ID
+    itemsById: ITEMS_BY_ID,
+    competitorRef: attachedCompetitorRef.value
   })
 )
 
@@ -234,6 +266,7 @@ function clearSelection() {
   manualSelectedIds.clear()
   selectedIds.value = []
   floorOrder.value = []
+  attachedCompetitorRef.value = null
   Object.keys(floorMotionMap).forEach((key) => {
     delete floorMotionMap[key]
   })
@@ -245,6 +278,37 @@ function openDrawer() {
 
 function closeDrawer() {
   isDrawerOpen.value = false
+}
+
+function openCompetitorModal() {
+  isCompetitorModalOpen.value = true
+}
+
+function closeCompetitorModal() {
+  isCompetitorModalOpen.value = false
+}
+
+function attachCompetitorToBlueprint() {
+  if (competitorDraft.targetPage.trim() && !pageTarget.value.trim()) {
+    pageTarget.value = competitorDraft.targetPage.trim()
+  }
+  attachedCompetitorRef.value = {
+    sourceMode: competitorDraft.sourceMode,
+    competitorUrl: competitorDraft.competitorUrl.trim(),
+    anchorText: competitorDraft.anchorText.trim(),
+    sectionArea: competitorDraft.sectionArea,
+    triggers: [...competitorDraft.triggers],
+    visualFocus: [...competitorDraft.visualFocus],
+    extraNote: competitorDraft.extraNote.trim()
+  }
+  isCompetitorModalOpen.value = false
+  isDrawerOpen.value = true
+  showToast('已将外部网站拆解要求并入整页话术')
+}
+
+function clearCompetitorRef() {
+  attachedCompetitorRef.value = null
+  showToast('已移除外部网站参考要求')
 }
 
 function setPreviewViewport(vp) {
@@ -300,6 +364,10 @@ export function useCatalogStore() {
     floorMotionMap,
     pageTarget,
     isDrawerOpen,
+    isCompetitorModalOpen,
+    competitorDraft,
+    attachedCompetitorRef,
+    competitorInspectPrompt,
     previewViewport,
     cardViewport,
     cardViewportVersion,
@@ -322,6 +390,10 @@ export function useCatalogStore() {
     clearSelection,
     openDrawer,
     closeDrawer,
+    openCompetitorModal,
+    closeCompetitorModal,
+    attachCompetitorToBlueprint,
+    clearCompetitorRef,
     setPreviewViewport,
     setCardViewport,
     showToast,

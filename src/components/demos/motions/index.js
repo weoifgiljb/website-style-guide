@@ -12,6 +12,9 @@ import MotionParallax from './MotionParallax.vue'
 import MotionCountUp from './MotionCountUp.vue'
 import MotionMarquee from './MotionMarquee.vue'
 import MotionFloatPulse from './MotionFloatPulse.vue'
+import MotionAutoProgressTabs from './MotionAutoProgressTabs.vue'
+import MotionChannelFlow from './MotionChannelFlow.vue'
+import MotionChatStream from './MotionChatStream.vue'
 
 export const MOTION_DEMO_MAP = {
   MotionFadeUp,
@@ -27,5 +30,8 @@ export const MOTION_DEMO_MAP = {
   MotionParallax,
   MotionCountUp,
   MotionMarquee,
-  MotionFloatPulse
+  MotionFloatPulse,
+  MotionAutoProgressTabs,
+  MotionChannelFlow,
+  MotionChatStream
 }

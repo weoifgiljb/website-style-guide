@@ -8,7 +8,8 @@ const {
   searchQuery,
   selectedIds,
   setCategory,
-  openDrawer
+  openDrawer,
+  openCompetitorModal
 } = useCatalogStore()
 
 const categoryCounts = computed(() => {
@@ -60,6 +61,10 @@ const categoryCounts = computed(() => {
             ×
           </button>
         </div>
+
+        <button type="button" class="competitor-btn" @click="openCompetitorModal()">
+          <span>🔍 参考外部动效</span>
+        </button>
 
         <button type="button" class="blueprint-btn" @click="openDrawer()">
           <span>🧩 整页拼装预览</span>
@@ -216,6 +221,28 @@ const categoryCounts = computed(() => {
 .search-clear:hover {
   background: var(--border);
   color: var(--text);
+}
+
+.competitor-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.competitor-btn:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+  color: #ffffff;
 }
 
 .blueprint-btn {

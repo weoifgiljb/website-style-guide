@@ -4,13 +4,16 @@ import { CATEGORIES } from './data/index.js'
 import { useCatalogStore } from './composables/useCatalogStore.js'
 import HeroHeader from './components/shell/HeroHeader.vue'
 import FilterToolbar from './components/shell/FilterToolbar.vue'
+import PresetShowcaseStrip from './components/shell/PresetShowcaseStrip.vue'
 import CatalogCard from './components/shell/CatalogCard.vue'
 import ComboFloatingBar from './components/shell/ComboFloatingBar.vue'
 import PageBlueprintDrawer from './components/shell/PageBlueprintDrawer.vue'
+import CompetitorPromptModal from './components/shell/CompetitorPromptModal.vue'
 import ToastNotice from './components/shell/ToastNotice.vue'
 
 const {
   replayTick,
+  activeCategory,
   searchQuery,
   filteredItems,
   isSelected,
@@ -18,6 +21,12 @@ const {
   toggleSelect,
   copyText
 } = useCatalogStore()
+
+const showPresetStrip = computed(
+  () =>
+    !searchQuery.value.trim() &&
+    (activeCategory.value === 'all' || activeCategory.value === 'style')
+)
 
 const visibleSections = computed(() =>
   CATEGORIES.slice(1)
@@ -30,7 +39,7 @@ const visibleSections = computed(() =>
 
 function handleCopyCard(item) {
   const prefix = item.code ? `${item.code} ` : ''
-  copyText(item.prompt, `已复制「${prefix}${item.name}」需求话术`)
+  copyText(item.prompt, `已复制「${prefix}${item.name}」参数规格话术`)
 }
 
 function resetFilters() {
@@ -45,6 +54,8 @@ function resetFilters() {
     <FilterToolbar />
 
     <main class="main container">
+      <PresetShowcaseStrip v-if="showPresetStrip" />
+
       <template v-if="visibleSections.length > 0">
         <section
           v-for="section in visibleSections"
@@ -74,26 +85,27 @@ function resetFilters() {
       </template>
 
       <div v-else class="empty-state">
-        <p>没有找到匹配的版式或动效，换个关键词试试（比如：S-08、Bento、首屏、FAQ、手机端、跑马灯）</p>
+        <p>没有找到匹配的版式或动效，换个关键词试试（比如：S-08、Intercom、读条、流光、跑马灯）</p>
         <button type="button" class="reset-btn" @click="resetFilters">
           重置筛选条件
         </button>
       </div>
 
       <div class="tip-banner">
-        💡 节奏建议：常规交互控制在 0.25～0.45s，单页挑 1～2 个重点动效最显高级。
+        💡 节奏建议：常规交互控制在 0.25～0.45s，单页挑 1～2 个重点动效最显高级；若参考陌生小网站，点顶部「🔍 参考外部动效」生成浏览器动态采样指令。
       </div>
     </main>
 
     <ComboFloatingBar />
     <PageBlueprintDrawer />
+    <CompetitorPromptModal />
     <ToastNotice />
   </div>
 </template>
 
 <style scoped>
 .main {
-  padding: 28px 24px 44px;
+  padding: 24px 24px 44px;
 }
 
 .category-section {
