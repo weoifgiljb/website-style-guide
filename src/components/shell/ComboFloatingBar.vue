@@ -5,7 +5,6 @@ const {
   selectedIds,
   floorOrder,
   selectedItems,
-  selectedPrimitiveCount,
   selectedMotionCount,
   generatedPrompt,
   removeItem,
@@ -24,7 +23,7 @@ const {
     <div class="combo-left">
       <div class="combo-title">
         <span>
-          已选 {{ selectedIds.length }} 项（{{ floorOrder.length }} 个楼层 · {{ selectedPrimitiveCount }} 个子组件 · {{ selectedMotionCount }} 个动效）
+          已选 {{ selectedIds.length }} 项（{{ floorOrder.length }} 个版式楼层 · {{ selectedMotionCount }} 个动效）
         </span>
         <span v-if="selectedMotionCount > 3" class="combo-warn">
           （建议单页重点动效控制在 1～3 个以内，更显克制）

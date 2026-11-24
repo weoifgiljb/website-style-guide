@@ -14,15 +14,7 @@ export function filterCatalogItems({ items = [], activeCategory = 'all', searchQ
     if (!catMatch) return false
     if (!query) return true
 
-    const haystack = [
-      item.code,
-      item.name,
-      item.en,
-      item.normalPath,
-      item.keywords,
-      item.scene,
-      item.mobileTip
-    ]
+    const haystack = [item.code, item.name, item.en, item.keywords, item.scene, item.mobileTip]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -49,7 +41,7 @@ export function buildCodexPrompt({
 
   if (activeFloors.length > 0) {
     lines.push('')
-    lines.push('【一、整页楼层版式与动效编排（复用 www main 分支 normal 组件）】')
+    lines.push('【一、整页楼层版式与动效编排（按从上到下顺序）】')
     activeFloors.forEach((layoutId, idx) => {
       const layout = itemsById[layoutId]
       const motionId = floorMotionMap ? floorMotionMap[layoutId] : ''
@@ -58,26 +50,12 @@ export function buildCodexPrompt({
           ? itemsById[motionId]
           : null
 
-      const pathSuffix = layout.normalPath ? `｜复用 ${layout.normalPath}` : ''
-      let floorLine = `第 ${idx + 1} 屏【${layout.code} ${layout.name}${pathSuffix}】：${stripTrailingPeriod(layout.prompt)}。`
+      let floorLine = `第 ${idx + 1} 屏【${layout.code} ${layout.name}】：${stripTrailingPeriod(layout.prompt)}。`
       if (motion) {
         boundMotionIds.add(motion.id)
         floorLine += `（本屏搭配动效「${motion.name}（${motion.en}）」：${stripTrailingPeriod(motion.prompt)}。）`
       }
       lines.push(floorLine)
-    })
-  }
-
-  const selectedPrimitives = selectedIds
-    .map((id) => itemsById[id])
-    .filter((item) => item && item.kind === 'primitive')
-
-  if (selectedPrimitives.length > 0) {
-    lines.push('')
-    lines.push('【配套复用的 normal 基础子组件】')
-    selectedPrimitives.forEach((p) => {
-      const pPath = p.normalPath ? `｜${p.normalPath}` : ''
-      lines.push(`- [${p.code} ${p.name}${pPath}]：${stripTrailingPeriod(p.prompt)}。`)
     })
   }
 

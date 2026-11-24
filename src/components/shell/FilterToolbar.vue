@@ -47,8 +47,8 @@ const categoryCounts = computed(() => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="搜编号或组件名，如 N-05 / OpportunitySection / 跑马灯"
-            aria-label="搜编号或组件名"
+            placeholder="搜编号或名称，如 S-08 / Bento / 跑马灯"
+            aria-label="搜编号或名称"
           />
           <button
             v-if="searchQuery"

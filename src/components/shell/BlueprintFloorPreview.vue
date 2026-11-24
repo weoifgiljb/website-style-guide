@@ -195,7 +195,7 @@ const orbBackStyle = computed(() => {
   return { transform: `translate3d(0, ${y.toFixed(1)}px, 0)` }
 })
 
-watch([motionId, () => props.replayKey], ([nextId], [prevId]) => {
+watch([motionId, () => props.replayKey], ([nextId, nextReplay], [prevId]) => {
   if (nextId !== 'M-04') clearTextTimers()
   if (nextId !== prevId && nextId === 'M-08') accordionOpen.value = false
   runBoundMotion(false)
@@ -222,14 +222,9 @@ onUnmounted(() => {
     }"
   >
     <div class="floor-strip">
-      <div class="strip-left">
-        <span class="strip-title">
-          F{{ floorIndex + 1 }} · {{ layoutItem.code }} {{ layoutItem.name }}
-        </span>
-        <code v-if="layoutItem.normalPath" class="strip-normal-path">
-          {{ layoutItem.normalPath }}
-        </code>
-      </div>
+      <span class="strip-title">
+        F{{ floorIndex + 1 }} · {{ layoutItem.code }} {{ layoutItem.name }}
+      </span>
       <div v-if="motionItem" class="strip-right">
         <span class="strip-motion-pill">✨ {{ motionItem.name }}</span>
         <button type="button" class="strip-action-btn" @click="triggerFloorMotion">
@@ -388,24 +383,7 @@ onUnmounted(() => {
   z-index: 3;
 }
 
-.strip-left {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-width: 0;
-}
-
 .strip-title { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); }
-.strip-normal-path {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 10.5px;
-  color: #1e40af;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  padding: 0 6px;
-  border-radius: 4px;
-}
 .strip-right { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .strip-motion-pill {
   font-size: 11px; font-weight: 600; color: var(--primary);
@@ -425,7 +403,6 @@ onUnmounted(() => {
 /* M-01, M-02, M-03 Entrance */
 .anim-bp-fade-up { animation: bpFadeUp var(--dur, 0.28s) var(--ease) both; }
 .anim-bp-zoom { animation: bpZoomIn var(--dur, 0.28s) var(--ease) both; }
-.anim-bp-stagger :deep(.n-card-item),
 .anim-bp-stagger :deep(.layout-s02 > *),
 .anim-bp-stagger :deep(.layout-s03 > *),
 .anim-bp-stagger :deep(.layout-s04 > *),
@@ -440,19 +417,14 @@ onUnmounted(() => {
   animation-timing-function: var(--ease);
   animation-fill-mode: both;
 }
-.anim-bp-stagger :deep(.n-card-item:nth-child(1)),
 .anim-bp-stagger .floor-layout-host > :deep(* > *:nth-child(1)),
 .anim-bp-stagger :deep(.pr-grid > *:nth-child(1)) { animation-delay: 0s; }
-.anim-bp-stagger :deep(.n-card-item:nth-child(2)),
 .anim-bp-stagger .floor-layout-host > :deep(* > *:nth-child(2)),
 .anim-bp-stagger :deep(.pr-grid > *:nth-child(2)) { animation-delay: 0.1s; }
-.anim-bp-stagger :deep(.n-card-item:nth-child(3)),
 .anim-bp-stagger .floor-layout-host > :deep(* > *:nth-child(3)),
 .anim-bp-stagger :deep(.pr-grid > *:nth-child(3)) { animation-delay: 0.2s; }
-.anim-bp-stagger :deep(.n-card-item:nth-child(4)),
 .anim-bp-stagger .floor-layout-host > :deep(* > *:nth-child(4)),
 .anim-bp-stagger :deep(.pr-grid > *:nth-child(4)) { animation-delay: 0.3s; }
-.anim-bp-stagger :deep(.n-card-item:nth-child(n + 5)),
 .anim-bp-stagger .floor-layout-host > :deep(* > *:nth-child(n + 5)) { animation-delay: 0.38s; }
 
 /* M-05 Hover Lift */
@@ -530,7 +502,6 @@ onUnmounted(() => {
 }
 .bp-step-pill.active { background: var(--primary); border-color: var(--primary); color: #ffffff; }
 
-.floor-layout-host.has-sticky-step :deep(.n-card-item),
 .floor-layout-host.has-sticky-step :deep(.m3-card),
 .floor-layout-host.has-sticky-step :deep(.step-card),
 .floor-layout-host.has-sticky-step :deep(.mch-cell),
@@ -548,7 +519,6 @@ onUnmounted(() => {
     box-shadow var(--dur, 0.28s) var(--ease);
 }
 
-.floor-layout-host.sticky-accent-0 :deep(.n-card-item:nth-child(1)),
 .floor-layout-host.sticky-accent-0 :deep(.m3-card:nth-of-type(1)),
 .floor-layout-host.sticky-accent-0 :deep(.step-card:nth-of-type(1)),
 .floor-layout-host.sticky-accent-0 :deep(.mch-cell:nth-of-type(1)),
@@ -558,7 +528,6 @@ onUnmounted(() => {
 .floor-layout-host.sticky-accent-0 :deep(.ma-row:nth-of-type(1)),
 .floor-layout-host.sticky-accent-0 :deep(.cmp-card:nth-of-type(1)),
 .floor-layout-host.sticky-accent-0 :deep(.tm-card:nth-of-type(1)),
-.floor-layout-host.sticky-accent-1 :deep(.n-card-item:nth-child(2)),
 .floor-layout-host.sticky-accent-1 :deep(.m3-card:nth-of-type(2)),
 .floor-layout-host.sticky-accent-1 :deep(.step-card:nth-of-type(2)),
 .floor-layout-host.sticky-accent-1 :deep(.mch-cell:nth-of-type(2)),
@@ -568,8 +537,6 @@ onUnmounted(() => {
 .floor-layout-host.sticky-accent-1 :deep(.ma-row:nth-of-type(2)),
 .floor-layout-host.sticky-accent-1 :deep(.cmp-card:nth-of-type(2)),
 .floor-layout-host.sticky-accent-1 :deep(.tm-card:nth-of-type(2)),
-.floor-layout-host.sticky-accent-2 :deep(.n-card-item:nth-child(3)),
-.floor-layout-host.sticky-accent-2 :deep(.n-card-item:nth-child(2):last-child),
 .floor-layout-host.sticky-accent-2 :deep(.m3-card:nth-of-type(3)),
 .floor-layout-host.sticky-accent-2 :deep(.step-card:nth-of-type(3)),
 .floor-layout-host.sticky-accent-2 :deep(.mch-cell:nth-of-type(3)),

@@ -150,16 +150,15 @@ test('shell components enforce decluttered 2-col layout, dual-viewport switching
 
   const toolbar = fs.readFileSync(path.join(SHELL_DIR, 'FilterToolbar.vue'), 'utf8')
   assert.match(toolbar, /position:\s*sticky/, 'FilterToolbar must be sticky')
-  assert.match(toolbar, /搜编号或组件名，如 N-05 \/ OpportunitySection \/ 跑马灯/, 'FilterToolbar must include exact search placeholder')
+  assert.match(toolbar, /搜编号或名称，如 S-08 \/ Bento \/ 跑马灯/, 'FilterToolbar must include exact search placeholder')
   assert.match(toolbar, /🧩 整页拼装预览/, 'FilterToolbar must include blueprint trigger button')
 
   const card = fs.readFileSync(path.join(SHELL_DIR, 'CatalogCard.vue'), 'utf8')
   assert.doesNotMatch(card, /mobile-tip/, 'CatalogCard must NOT contain .mobile-tip text')
-  assert.match(card, /normalPath/, 'CatalogCard must display item.normalPath mapping')
   assert.match(
     card,
-    /stage-badge/,
-    'CatalogCard must render .stage-badge for normal style/primitive cards'
+    /item\.kind\s*===\s*['"]style['"][\s\S]*stage-badge/,
+    'CatalogCard must conditionally render .stage-badge only when item.kind === "style"'
   )
   assert.match(
     card,

@@ -1,5 +1,5 @@
 import { CATEGORIES, PAGE_PRESETS } from './categories.js'
-import { LAYOUT_ITEMS, SECTION_LAYOUT_ITEMS, PRIMITIVE_ITEMS } from './layouts.js'
+import { LAYOUT_ITEMS } from './layouts.js'
 import { MOTION_ITEMS } from './motions.js'
 import { PITFALL_ITEMS } from './pitfalls.js'
 
@@ -10,12 +10,4 @@ export const ITEMS_BY_ID = ALL_ITEMS.reduce((acc, item) => {
   return acc
 }, {})
 
-export {
-  CATEGORIES,
-  PAGE_PRESETS,
-  LAYOUT_ITEMS,
-  SECTION_LAYOUT_ITEMS,
-  PRIMITIVE_ITEMS,
-  MOTION_ITEMS,
-  PITFALL_ITEMS
-}
+export { CATEGORIES, PAGE_PRESETS, LAYOUT_ITEMS, MOTION_ITEMS, PITFALL_ITEMS }

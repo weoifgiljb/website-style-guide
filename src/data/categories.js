@@ -3,27 +3,18 @@ export const CATEGORIES = [
     id: 'all',
     tabLabel: '全部',
     label: '全部',
-    sectionTitle: '全部 normal 组件与动效',
+    sectionTitle: '全部样式与动效',
     sectionNum: '★',
     sectionDesc: ''
   },
   {
     id: 'style',
-    tabLabel: 'normal 楼层',
-    label: 'normal 楼层',
-    sectionTitle: 'normal 页面楼层组件（N-01 ~ N-15）',
-    sectionNum: 'N',
-    sectionDesc: '严格对应 www 仓库 main 分支 src/components/normal/ 楼层区块组件',
+    tabLabel: '常用版式',
+    label: '常用版式',
+    sectionTitle: '常用页面版式（S-01 ~ S-14）',
+    sectionNum: 'S',
+    sectionDesc: '先挑页面骨架，可直接报编号给 Codex',
     numStyle: 'background:#ecfdf5;color:#047857;'
-  },
-  {
-    id: 'primitive',
-    tabLabel: 'normal 子组件',
-    label: 'normal 子组件',
-    sectionTitle: 'normal 配套基础子组件（N-16 ~ N-18）',
-    sectionNum: 'B',
-    sectionDesc: '对应 src/components/normal/ 下的标准按钮组、返回/箭头链接与图标底座',
-    numStyle: 'background:#eff6ff;color:#1d4ed8;'
   },
   {
     id: 'enter',
@@ -71,46 +62,43 @@ export const CATEGORIES = [
 export const PAGE_PRESETS = [
   {
     id: 'standard-feature',
-    name: '标准功能 / 方案页（对应 _default.js）',
-    desc: 'MetricsCard → FeatureHighlightBanner → OpportunitySection → PartnerSection → ArticleSection → FaqSection → TestimonialSection',
+    name: '常规功能页标准 5 屏',
+    desc: '左文右图首屏 → 三栏价值 → 左右交替 → FAQ → 底部收口',
     floors: [
-      { layoutId: 'N-04', motionId: 'M-12' },
-      { layoutId: 'N-06', motionId: 'M-01' },
-      { layoutId: 'N-05', motionId: 'M-02' },
-      { layoutId: 'N-09', motionId: '' },
-      { layoutId: 'N-10', motionId: 'M-07' },
-      { layoutId: 'N-13', motionId: 'M-08' },
-      { layoutId: 'N-11', motionId: '' }
+      { layoutId: 'S-01', motionId: 'M-01' },
+      { layoutId: 'S-02', motionId: 'M-02' },
+      { layoutId: 'S-03', motionId: 'M-05' },
+      { layoutId: 'S-14', motionId: 'M-08' },
+      { layoutId: 'S-06', motionId: 'M-06' }
     ],
-    extraIds: ['N-16']
+    extraIds: ['P-04']
   },
   {
     id: 'comparison-landing',
-    name: '新版集成详情页（对应 IntegrationDetail）',
-    desc: 'BrandWall → JourneyCardCarousel → OpportunitySection → ArticleSection → SolutionsSection → FaqSection → FinalCtaSection',
+    name: '方案对比转化页 6 屏',
+    desc: '居中大图首屏 → 优劣对比 → 三步流程 → 数据横幅 → 客户证言 → 底部收口',
     floors: [
-      { layoutId: 'N-02', motionId: 'M-13' },
-      { layoutId: 'N-07', motionId: 'M-10' },
-      { layoutId: 'N-05', motionId: 'M-02' },
-      { layoutId: 'N-10', motionId: 'M-07' },
-      { layoutId: 'N-08', motionId: 'M-09' },
-      { layoutId: 'N-13', motionId: 'M-08' },
-      { layoutId: 'N-14', motionId: 'M-14' }
+      { layoutId: 'S-07', motionId: 'M-01' },
+      { layoutId: 'S-09', motionId: 'M-05' },
+      { layoutId: 'S-10', motionId: 'M-02' },
+      { layoutId: 'S-05', motionId: 'M-12' },
+      { layoutId: 'S-11', motionId: 'M-07' },
+      { layoutId: 'S-06', motionId: 'M-06' }
     ],
-    extraIds: ['N-17']
+    extraIds: ['P-01']
   },
   {
     id: 'flagship-showcase',
-    name: '首页 / 定价转化页（对应 HomeV2 & pricing）',
-    desc: 'LogoCloud → SolutionsSection → Table → TestimonialSection → FaqSection → CtaSection',
+    name: '多场景旗舰专题页 6 屏',
+    desc: '轮换词首屏 → 渠道矩阵 → Bento 网格 → 角色 Tab → 套餐定价 → 底部收口',
     floors: [
-      { layoutId: 'N-03', motionId: 'M-13' },
-      { layoutId: 'N-08', motionId: 'M-09' },
-      { layoutId: 'N-12', motionId: '' },
-      { layoutId: 'N-11', motionId: 'M-05' },
-      { layoutId: 'N-13', motionId: 'M-08' },
-      { layoutId: 'N-15', motionId: 'M-05' }
+      { layoutId: 'S-01', motionId: 'M-04' },
+      { layoutId: 'S-04', motionId: 'M-13' },
+      { layoutId: 'S-08', motionId: 'M-05' },
+      { layoutId: 'S-13', motionId: 'M-09' },
+      { layoutId: 'S-12', motionId: 'M-06' },
+      { layoutId: 'S-06', motionId: '' }
     ],
-    extraIds: ['N-16']
+    extraIds: ['P-06']
   }
 ]

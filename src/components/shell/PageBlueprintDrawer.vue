@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
   PAGE_PRESETS,
-  SECTION_LAYOUT_ITEMS,
+  LAYOUT_ITEMS,
   MOTION_ITEMS,
   ITEMS_BY_ID
 } from '../../data/index.js'
@@ -34,11 +34,7 @@ const previewReplayKey = ref(0)
 const canvasScrollRatio = ref(0)
 
 const unselectedLayouts = computed(() =>
-  SECTION_LAYOUT_ITEMS.filter((item) => !floorOrder.value.includes(item.id))
-)
-
-const selectedPrimitives = computed(() =>
-  (selectedItems.value || []).filter((item) => item.kind === 'primitive')
+  LAYOUT_ITEMS.filter((item) => !floorOrder.value.includes(item.id))
 )
 
 const boundMotionIds = computed(() => {
@@ -97,11 +93,6 @@ function handleAddFloorSelect(event) {
 function handleApplyPreset(presetId) {
   applyPreset(presetId)
   previewReplayKey.value += 1
-}
-
-function clearSelectedPrimitives() {
-  const ids = selectedPrimitives.value.map((item) => item.id)
-  ids.forEach((id) => removeItem(id))
 }
 
 function clearUnboundMotions() {
@@ -216,21 +207,21 @@ onUnmounted(() => {
             </div>
 
             <div v-if="floorOrder.length === 0" class="empty-floors">
-              <p>当前还没有选定 normal 楼层组件，可一键套用标准模板或逐屏添加：</p>
+              <p>当前还没有选定版式楼层，可一键套用标准模板或逐屏添加：</p>
               <div class="empty-floor-btns">
                 <button
                   type="button"
                   class="mini-action-btn"
-                  @click="addFloor('N-06')"
+                  @click="addFloor('S-01')"
                 >
-                  + 添加 N-06 左右图文横幅
+                  + 添加 S-01 首屏
                 </button>
                 <button
                   type="button"
                   class="mini-action-btn primary"
                   @click="handleApplyPreset('standard-feature')"
                 >
-                  套用标准功能页模板
+                  套用标准 5 屏模板
                 </button>
               </div>
             </div>
@@ -242,19 +233,11 @@ onUnmounted(() => {
                 class="floor-card"
               >
                 <div class="floor-card-top">
-                  <div class="floor-card-info">
-                    <div class="floor-card-title">
-                      <span class="floor-badge">第 {{ idx + 1 }} 屏</span>
-                      <span class="floor-name">
-                        {{ ITEMS_BY_ID[layoutId]?.code }} {{ ITEMS_BY_ID[layoutId]?.name }}
-                      </span>
-                    </div>
-                    <code
-                      v-if="ITEMS_BY_ID[layoutId]?.normalPath"
-                      class="floor-normal-path"
-                    >
-                      {{ ITEMS_BY_ID[layoutId]?.normalPath }}
-                    </code>
+                  <div class="floor-card-title">
+                    <span class="floor-badge">第 {{ idx + 1 }} 屏</span>
+                    <span class="floor-name">
+                      {{ ITEMS_BY_ID[layoutId]?.code }} {{ ITEMS_BY_ID[layoutId]?.name }}
+                    </span>
                   </div>
 
                   <div class="floor-controls">
@@ -314,19 +297,19 @@ onUnmounted(() => {
             <div class="add-floor-wrap">
               <select
                 class="add-floor-select"
-                aria-label="继续添加 normal 楼层组件"
+                aria-label="继续添加页面版式楼层"
                 :disabled="unselectedLayouts.length === 0"
                 @change="handleAddFloorSelect"
               >
                 <option value="">
-                  {{ unselectedLayouts.length > 0 ? '+ 继续添加 normal 楼层组件（N-01 ~ N-15）...' : '已添加全部 15 个 normal 楼层组件' }}
+                  {{ unselectedLayouts.length > 0 ? '+ 继续添加版式楼层（S-01 ~ S-14）...' : '已添加全部 14 种版式楼层' }}
                 </option>
                 <option
                   v-for="layout in unselectedLayouts"
                   :key="layout.id"
                   :value="layout.id"
                 >
-                  {{ layout.code }} {{ layout.name }} — {{ layout.normalPath }}
+                  {{ layout.code }} {{ layout.name }} — {{ layout.scene }}
                 </option>
               </select>
             </div>
@@ -391,7 +374,7 @@ onUnmounted(() => {
                 ↻ 重播整页动效
               </button>
               <span class="canvas-summary">
-                共 {{ floorOrder.length }} 屏<template v-if="selectedPrimitives.length > 0"> · {{ selectedPrimitives.length }} 项子组件</template><template v-if="unboundSelectedMotions.length > 0"> · {{ unboundSelectedMotions.length }} 项独立动效</template> · 实时响应式骨架
+                共 {{ floorOrder.length }} 屏<template v-if="unboundSelectedMotions.length > 0"> · {{ unboundSelectedMotions.length }} 项独立动效</template> · 实时响应式骨架
               </span>
             </div>
           </div>
@@ -429,13 +412,13 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <!-- Stacked Floors, Primitives & Standalone Motions -->
+              <!-- Stacked Floors & Standalone Motions -->
               <div class="mock-page-body">
                 <div
-                  v-if="floorOrder.length === 0 && selectedPrimitives.length === 0 && unboundSelectedMotions.length === 0"
+                  v-if="floorOrder.length === 0 && unboundSelectedMotions.length === 0"
                   class="canvas-empty"
                 >
-                  请在左侧选择预设模板或添加 normal 楼层组件，这里会实时拼出整页骨架。
+                  请在左侧选择预设模板或添加版式楼层，这里会实时拼出整页骨架。
                 </div>
 
                 <template v-for="(layoutId, idx) in floorOrder" :key="layoutId">
@@ -453,56 +436,6 @@ onUnmounted(() => {
                     :scroll-ratio="canvasScrollRatio"
                   />
                 </template>
-
-                <div
-                  v-if="selectedPrimitives.length > 0"
-                  class="standalone-primitives-section"
-                >
-                  <div class="standalone-primitives-head">
-                    <span>🧩 已选配套 normal 基础子组件</span>
-                    <button
-                      type="button"
-                      class="clear-unbound-btn"
-                      @click="clearSelectedPrimitives()"
-                    >
-                      清空基础子组件
-                    </button>
-                  </div>
-                  <div
-                    class="standalone-motions-grid"
-                    :class="{ 'is-mobile': previewViewport === 'mobile' }"
-                  >
-                    <div
-                      v-for="p in selectedPrimitives"
-                      :key="p.id"
-                      class="standalone-motion-card is-primitive"
-                    >
-                      <div class="standalone-motion-meta">
-                        <span class="standalone-primitive-code">{{ p.code }}</span>
-                        <span class="standalone-motion-name">{{ p.name }}</span>
-                        <code v-if="p.normalPath" class="standalone-primitive-path">{{ p.normalPath }}</code>
-                        <button
-                          type="button"
-                          class="icon-btn danger standalone-remove-btn"
-                          :title="'移除 ' + p.name"
-                          :aria-label="'移除 ' + p.name"
-                          @click="removeItem(p.id)"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <div class="stage is-primitive-stage">
-                        <component
-                          :is="DEMO_COMPONENTS[p.demoKey]"
-                          v-if="DEMO_COMPONENTS[p.demoKey]"
-                          :viewport="previewViewport"
-                          :compact="true"
-                          :replay-tick="previewReplayKey"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 <div
                   v-if="unboundSelectedMotions.length > 0"
@@ -791,16 +724,9 @@ onUnmounted(() => {
 
 .floor-card-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.floor-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
 }
 
 .floor-card-title {
@@ -824,15 +750,6 @@ onUnmounted(() => {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.floor-normal-path {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 10.5px;
-  color: #1e40af;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1155,7 +1072,6 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-.standalone-primitives-section,
 .standalone-motions-section {
   background: #ffffff;
   border: 1px dashed #93c5fd;
@@ -1166,11 +1082,6 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.standalone-primitives-section {
-  border-color: #a5b4fc;
-}
-
-.standalone-primitives-head,
 .standalone-motions-head {
   font-size: 12px;
   font-weight: 700;
@@ -1179,10 +1090,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.standalone-primitives-head {
-  color: #1d4ed8;
 }
 
 .standalone-motions-grid {
@@ -1212,8 +1119,7 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-.standalone-motion-code,
-.standalone-primitive-code {
+.standalone-motion-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 10.5px;
   font-weight: 700;
@@ -1224,24 +1130,16 @@ onUnmounted(() => {
   border-radius: 5px;
 }
 
-.standalone-primitive-code {
-  color: #1d4ed8;
-  background: #eef2ff;
-  border-color: #c7d2fe;
-}
-
 .standalone-motion-name {
   font-size: 12px;
   font-weight: 700;
   color: var(--text);
 }
 
-.standalone-motion-en,
-.standalone-primitive-path {
+.standalone-motion-en {
   font-size: 10.5px;
   color: var(--text-muted);
   margin-left: auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .standalone-remove-btn {
@@ -1261,11 +1159,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.standalone-motion-card .stage.is-primitive-stage {
-  padding: 14px 12px;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
 }
 
 .mock-footer {
