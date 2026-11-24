@@ -20,6 +20,7 @@ const SHELL_COMPONENTS = [
   'HeroHeader.vue',
   'FilterToolbar.vue',
   'PresetShowcaseStrip.vue',
+  'MotionTooltip.vue',
   'CatalogCard.vue',
   'ComboFloatingBar.vue',
   'PageBlueprintDrawer.vue',
@@ -57,8 +58,8 @@ test('GitHub Pages workflow (.github/workflows/deploy.yml) and README.md configu
   )
 })
 
-test('all 9 shell components, src/App.vue, and src/main.js exist and compile cleanly with vue/compiler-sfc', () => {
-  assert.equal(SHELL_COMPONENTS.length, 9)
+test('all 10 shell components, src/App.vue, and src/main.js exist and compile cleanly with vue/compiler-sfc', () => {
+  assert.equal(SHELL_COMPONENTS.length, 10)
 
   const mainJsPath = path.join(ROOT_DIR, 'src', 'main.js')
   assert.ok(fs.existsSync(mainJsPath), `Missing entry file: ${mainJsPath}`)

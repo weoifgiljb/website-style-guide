@@ -2,30 +2,102 @@ const BASELINE_RULE =
   '配色、字体与间距保持 SaleSmartly 官网现有规范，常规交互动效时长控制在 0.25～0.45 秒、整体克制流畅；手机端（390px）自动转为单列简化布局，避免悬浮元素遮挡和大幅晃动。先确认方案再改代码。'
 
 export const COMPETITOR_SECTION_OPTIONS = [
-  { id: 'hero', label: '首屏主视觉（Hero）' },
-  { id: 'feature-demo', label: '中段核心功能演示区' },
-  { id: 'bento-cards', label: 'Bento 卡片 / 多栏卖点区' },
-  { id: 'flow-diagram', label: '连线流转 / 架构图解区' },
-  { id: 'tabs-accordion', label: 'Tab 轮播 / 折叠问答区' },
-  { id: 'other', label: '其他自定义模块' }
+  { id: 'hero', shortLabel: '首屏', label: '首屏主视觉（Hero）' },
+  { id: 'feature-demo', shortLabel: '功能演示区', label: '中段核心功能演示区' },
+  { id: 'bento-cards', shortLabel: '多栏卡片区', label: 'Bento 卡片 / 多栏卖点区' },
+  { id: 'flow-diagram', shortLabel: '连线架构图', label: '连线流转 / 架构图解区' },
+  { id: 'tabs-accordion', shortLabel: 'Tab / 问答区', label: 'Tab 轮播 / 折叠问答区' },
+  { id: 'other', shortLabel: '其他位置', label: '其他自定义模块' }
 ]
 
 export const COMPETITOR_TRIGGER_OPTIONS = [
-  { id: 'scroll-enter', label: '滚到这里自动播放一次' },
-  { id: 'scroll-scrub', label: '边往下滚，画面边跟着固定/切换' },
-  { id: 'hover-react', label: '鼠标移上去跟随/微浮/高亮' },
-  { id: 'auto-progress', label: '带进度条自动轮播（也可手点）' },
-  { id: 'click-switch', label: '点击按钮或标签后平滑切换' },
-  { id: 'loop-pulse', label: '一直在克制循环流动/脉冲' }
+  {
+    id: 'scroll-enter',
+    shortLabel: '滚到浮现',
+    anim: 'scroll-enter',
+    tip: '滚到这一屏时，元素自动淡入上浮一次',
+    label: '滚到这里自动播放一次'
+  },
+  {
+    id: 'scroll-scrub',
+    shortLabel: '边滚边动',
+    anim: 'scroll-scrub',
+    tip: '画面随滚轮上下进度实时联动推进',
+    label: '边往下滚，画面边跟着固定/切换'
+  },
+  {
+    id: 'hover-react',
+    shortLabel: '悬停反馈',
+    anim: 'hover-react',
+    tip: '鼠标移上去时卡片上浮、发光或跟随',
+    label: '鼠标移上去跟随/微浮/高亮'
+  },
+  {
+    id: 'auto-progress',
+    shortLabel: '读条轮播',
+    anim: 'auto-progress',
+    tip: '进度条读满自动切下一项，也可手点',
+    label: '带进度条自动轮播（也可手点）'
+  },
+  {
+    id: 'click-switch',
+    shortLabel: '点击切换',
+    anim: 'click-switch',
+    tip: '点击 Tab 或按钮后滑块与内容平滑过渡',
+    label: '点击按钮或标签后平滑切换'
+  },
+  {
+    id: 'loop-pulse',
+    shortLabel: '持续流动',
+    anim: 'loop-pulse',
+    tip: '无需操作，匀速跑马灯或柔和呼吸循环',
+    label: '一直在克制循环流动/脉冲'
+  }
 ]
 
 export const COMPETITOR_VISUAL_OPTIONS = [
-  { id: 'pin-swap', label: '一侧固定，另一侧配图/卡片切换' },
-  { id: 'stagger-stream', label: '气泡/卡片按时间轴依次流式弹出' },
-  { id: 'path-pulse', label: '线条流光汇聚并依次点亮节点' },
-  { id: 'spotlight-glow', label: '局部边框发光 / 聚光灯扫光' },
-  { id: 'smooth-expand', label: '高度平滑展开收起不闪跳' },
-  { id: 'number-bar', label: '数字递增或进度条读秒推进' }
+  {
+    id: 'pin-swap',
+    shortLabel: '左定右切',
+    anim: 'pin-swap',
+    tip: '一侧文字固定不动，另一侧配图平滑切换',
+    label: '一侧固定，另一侧配图/卡片切换'
+  },
+  {
+    id: 'stagger-stream',
+    shortLabel: '依次弹出',
+    anim: 'stagger-stream',
+    tip: '多个气泡或卡片按时间差错峰冒出来',
+    label: '气泡/卡片按时间轴依次流式弹出'
+  },
+  {
+    id: 'path-pulse',
+    shortLabel: '连线流光',
+    anim: 'path-pulse',
+    tip: '光束顺着连线流动，依次点亮目标节点',
+    label: '线条流光汇聚并依次点亮节点'
+  },
+  {
+    id: 'spotlight-glow',
+    shortLabel: '边框扫光',
+    anim: 'spotlight-glow',
+    tip: '按钮或卡片边框掠过一束柔和品牌高光',
+    label: '局部边框发光 / 聚光灯扫光'
+  },
+  {
+    id: 'smooth-expand',
+    shortLabel: '丝滑展开',
+    anim: 'smooth-expand',
+    tip: '折叠区柔顺推开高度，不生硬闪现跳动',
+    label: '高度平滑展开收起不闪跳'
+  },
+  {
+    id: 'number-bar',
+    shortLabel: '数字递增',
+    anim: 'number-bar',
+    tip: '核心数据从 0 快速滚动递增到目标值',
+    label: '数字递增或进度条读秒推进'
+  }
 ]
 
 function stripTrailingPeriod(text = '') {

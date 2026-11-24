@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { PAGE_PRESETS, ITEMS_BY_ID } from '../../data/index.js'
 import { buildPresetPrompt } from '../../utils/promptBuilder.js'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
+import MotionTooltip from './MotionTooltip.vue'
 
 const {
   pageTarget,
@@ -13,6 +14,14 @@ const {
 } = useCatalogStore()
 
 const isCollapsed = ref(false)
+
+const tooltipState = reactive({
+  visible: false,
+  title: '',
+  tip: '',
+  anim: 'scroll-enter',
+  anchorRect: null
+})
 
 const SHORT_LAYOUT_LABELS = {
   'S-01': '左文右图首屏',
@@ -47,6 +56,26 @@ const SHORT_MOTION_LABELS = {
   'M-17': 'AI 对话流'
 }
 
+const MOTION_ID_TO_ANIM = {
+  'M-01': 'scroll-enter',
+  'M-02': 'stagger-stream',
+  'M-03': 'scroll-enter',
+  'M-04': 'click-switch',
+  'M-05': 'hover-react',
+  'M-06': 'spotlight-glow',
+  'M-07': 'hover-react',
+  'M-08': 'smooth-expand',
+  'M-09': 'click-switch',
+  'M-10': 'pin-swap',
+  'M-11': 'scroll-scrub',
+  'M-12': 'number-bar',
+  'M-13': 'loop-pulse',
+  'M-14': 'loop-pulse',
+  'M-15': 'auto-progress',
+  'M-16': 'path-pulse',
+  'M-17': 'stagger-stream'
+}
+
 function shortLayoutName(layoutId) {
   if (SHORT_LAYOUT_LABELS[layoutId]) return SHORT_LAYOUT_LABELS[layoutId]
   const item = ITEMS_BY_ID[layoutId]
@@ -59,7 +88,29 @@ function shortMotionName(motionId) {
   return item ? item.name : ''
 }
 
+function showPresetMotionTip(motionId, event) {
+  if (!motionId || !event?.currentTarget) return
+  const item = ITEMS_BY_ID[motionId]
+  if (!item) return
+  const r = event.currentTarget.getBoundingClientRect()
+  tooltipState.title = `${item.code} ${item.name}`
+  tooltipState.tip = item.shortPrompt
+  tooltipState.anim = MOTION_ID_TO_ANIM[motionId] || 'scroll-enter'
+  tooltipState.anchorRect = {
+    top: r.top,
+    bottom: r.bottom,
+    left: r.left,
+    width: r.width
+  }
+  tooltipState.visible = true
+}
+
+function hidePresetMotionTip() {
+  tooltipState.visible = false
+}
+
 function handlePreviewPreset(presetId) {
+  hidePresetMotionTip()
   applyPreset(presetId)
   openDrawer()
 }
@@ -80,7 +131,7 @@ function handleCopyPreset(preset) {
       <div class="strip-title-group">
         <span class="strip-badge">⚡ 整页预设套餐</span>
         <h2 class="strip-title">一键套用现成版式 + 动效编排</h2>
-        <span class="strip-sub">不用逐卡挑选，点预览直接看整页联动效果，或一键复制参数级话术</span>
+        <span class="strip-sub">鼠标指着蓝色动效词可看小动画，点预览直接看整页骨架</span>
       </div>
 
       <div class="strip-header-actions">
@@ -89,14 +140,14 @@ function handleCopyPreset(preset) {
           class="competitor-inline-btn"
           @click="openCompetitorModal()"
         >
-          🔍 看上了外部小网站的动效？点这里让 Agent 拆解
+          🔍 抄外部小站动效
         </button>
         <button
           type="button"
           class="collapse-btn"
           @click="isCollapsed = !isCollapsed"
         >
-          {{ isCollapsed ? '展开套餐 ▼' : '收起 ▲' }}
+          {{ isCollapsed ? '展开 ▼' : '收起 ▲' }}
         </button>
       </div>
     </div>
@@ -120,6 +171,9 @@ function handleCopyPreset(preset) {
             v-for="(fl, idx) in preset.floors"
             :key="fl.layoutId + '-' + idx"
             class="chain-pill"
+            :class="{ 'has-motion': Boolean(fl.motionId) }"
+            @mouseenter="showPresetMotionTip(fl.motionId, $event)"
+            @mouseleave="hidePresetMotionTip()"
           >
             <b>{{ fl.layoutId }}</b>
             {{ shortLayoutName(fl.layoutId) }}
@@ -145,6 +199,14 @@ function handleCopyPreset(preset) {
         </div>
       </article>
     </div>
+
+    <MotionTooltip
+      :visible="tooltipState.visible"
+      :title="tooltipState.title"
+      :tip="tooltipState.tip"
+      :anim="tooltipState.anim"
+      :anchor-rect="tooltipState.anchorRect"
+    />
   </section>
 </template>
 
@@ -305,6 +367,16 @@ function handleCopyPreset(preset) {
   border: 1px solid var(--border);
   padding: 2px 7px;
   border-radius: 6px;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.chain-pill.has-motion {
+  cursor: help;
+}
+
+.chain-pill.has-motion:hover {
+  border-color: #93c5fd;
+  background: var(--primary-soft);
 }
 
 .chain-pill b {
