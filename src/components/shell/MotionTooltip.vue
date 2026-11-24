@@ -4,6 +4,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 const props = defineProps({
   visible: { type: Boolean, default: false },
   title: { type: String, default: '' },
+  badge: { type: String, default: '' },
   tip: { type: String, default: '' },
   anim: { type: String, default: 'scroll-enter' },
   anchorRect: { type: Object, default: null }
@@ -12,6 +13,23 @@ const props = defineProps({
 const counterVal = ref(18)
 const activeSlot = ref(0)
 let loopTimer = null
+
+const SECTION_META = {
+  'sec-hero': { floorIndex: 0, posLabel: '第1屏' },
+  'sec-feature': { floorIndex: 1, posLabel: '第2屏' },
+  'sec-bento': { floorIndex: 2, posLabel: '中间段' },
+  'sec-flow': { floorIndex: 3, posLabel: '中段图' },
+  'sec-tabs': { floorIndex: 4, posLabel: '靠下方' },
+  'sec-other': { floorIndex: -1, posLabel: '任意处' }
+}
+
+const isSectionScene = computed(() => Boolean(SECTION_META[props.anim]))
+const activeFloorIdx = computed(() => {
+  const meta = SECTION_META[props.anim]
+  if (!meta) return 0
+  if (meta.floorIndex === -1) return activeSlot.value === 0 ? 1 : 3
+  return meta.floorIndex
+})
 
 function clearLoop() {
   if (loopTimer) {
@@ -50,9 +68,9 @@ const tooltipStyle = computed(() => {
   const rect = props.anchorRect
   if (!rect) return { left: '50%', top: '50%' }
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
-  const halfWidth = 114
+  const halfWidth = 128
   const centerX = Math.min(vw - halfWidth - 12, Math.max(halfWidth + 12, rect.left + rect.width / 2))
-  const placeBelow = rect.top < 156
+  const placeBelow = rect.top < 172
 
   if (placeBelow) {
     return {
@@ -68,7 +86,7 @@ const tooltipStyle = computed(() => {
   }
 })
 
-const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top < 156))
+const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top < 172))
 </script>
 
 <template>
@@ -82,8 +100,86 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
         role="tooltip"
       >
         <div class="mt-stage">
+          <!-- ================= A. 页面位置与模块长相示意（在哪个位置） ================= -->
+          <div v-if="isSectionScene" class="scene scene-section-map">
+            <!-- 左侧：整张网页从上到下迷你定位图（在哪儿） -->
+            <div class="mini-page-map" aria-hidden="true">
+              <div class="mpm-browser-dots">
+                <i></i><i></i><i></i>
+                <span>整张网页</span>
+              </div>
+              <div class="mpm-floors">
+                <div
+                  v-for="idx in [0, 1, 2, 3, 4]"
+                  :key="idx"
+                  class="mpm-floor"
+                  :class="{ hit: activeFloorIdx === idx }"
+                >
+                  <em v-if="activeFloorIdx === idx">在这</em>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右侧：这块区域放大长什么样（是什么） -->
+            <div class="sec-zoom-card">
+              <!-- 1. 首屏 Hero -->
+              <div v-if="anim === 'sec-hero'" class="sz-hero">
+                <div class="sz-hero-left">
+                  <span class="sz-kicker">大标题区</span>
+                  <i class="sz-h1"></i>
+                  <i class="sz-h2"></i>
+                  <span class="sz-cta">主按钮</span>
+                </div>
+                <div class="sz-hero-right">主视觉图</div>
+              </div>
+
+              <!-- 2. 功能演示区 -->
+              <div v-else-if="anim === 'sec-feature'" class="sz-feature">
+                <div class="sz-feat-points">
+                  <span class="on">✓ 卖点 1</span>
+                  <span>✓ 卖点 2</span>
+                </div>
+                <div class="sz-feat-screen">🖥 产品界面图</div>
+              </div>
+
+              <!-- 3. 多栏卡片区 -->
+              <div v-else-if="anim === 'sec-bento'" class="sz-bento">
+                <div class="sz-bento-cell hi">📦 亮点卡 1</div>
+                <div class="sz-bento-cell">⚡ 亮点卡 2</div>
+                <div class="sz-bento-cell">🛡 亮点卡 3</div>
+                <div class="sz-bento-cell hi">📊 亮点卡 4</div>
+              </div>
+
+              <!-- 4. 连线架构图 -->
+              <div v-else-if="anim === 'sec-flow'" class="sz-flow">
+                <div class="sz-flow-col">
+                  <span>WA</span>
+                  <span>IG</span>
+                </div>
+                <div class="sz-flow-arrow">──▶</div>
+                <div class="sz-flow-hub">中心系统</div>
+              </div>
+
+              <!-- 5. Tab / 问答区 -->
+              <div v-else-if="anim === 'sec-tabs'" class="sz-tabs">
+                <div class="sz-tab-pills">
+                  <span class="on">标签 1</span>
+                  <span>标签 2</span>
+                </div>
+                <div class="sz-faq-bar">Q: 常见问题展开 ▾</div>
+              </div>
+
+              <!-- 6. 其他位置 -->
+              <div v-else class="sz-other">
+                <span class="sz-other-icon">🔍 任意模块</span>
+                <span class="sz-other-sub">填上方原文词自动定位</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= B. 12 种实时微缩动效演示（怎么触发 / 什么效果） ================= -->
           <!-- 1. scroll-enter: Fade In Up -->
-          <div v-if="anim === 'scroll-enter'" class="scene scene-enter">
+          <div v-else-if="anim === 'scroll-enter'" class="scene scene-enter">
             <div class="mini-scroll-track"><i class="mini-scroll-thumb"></i></div>
             <div class="mini-card anim-loop-fadeup">
               <span class="mc-pill"></span>
@@ -216,7 +312,10 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
         </div>
 
         <div class="mt-caption">
-          <div class="mt-title">{{ props.title }}</div>
+          <div class="mt-head-row">
+            <span class="mt-title">{{ props.title }}</span>
+            <span v-if="props.badge" class="mt-where-badge">📍 {{ props.badge }}</span>
+          </div>
           <div class="mt-tip">{{ props.tip }}</div>
         </div>
       </div>
@@ -228,7 +327,7 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
 .motion-tooltip {
   position: fixed;
   z-index: 220;
-  width: 224px;
+  width: 252px;
   background: #0f172a;
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.28);
@@ -258,14 +357,14 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
 }
 
 .mt-stage {
-  height: 82px;
+  height: 92px;
   background: #f8fafc;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 10px;
+  padding: 7px 8px;
   color: #0f172a;
 }
 
@@ -273,17 +372,35 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
   padding: 7px 4px 2px;
 }
 
+.mt-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
 .mt-title {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 2px;
+}
+
+.mt-where-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(37, 99, 235, 0.24);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .mt-tip {
   font-size: 11px;
   color: #cbd5e1;
-  line-height: 1.38;
+  line-height: 1.4;
 }
 
 .scene {
@@ -295,6 +412,325 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
   position: relative;
 }
 
+/* ================= Section Map + Structure Wireframe ================= */
+.scene-section-map {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 7px;
+  align-items: stretch;
+}
+
+.mini-page-map {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mpm-browser-dots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.mpm-browser-dots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.mpm-browser-dots span {
+  margin-left: auto;
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.mpm-floors {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  justify-content: space-between;
+}
+
+.mpm-floor {
+  flex: 1;
+  border-radius: 3px;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.mpm-floor.hit {
+  background: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  animation: floorPulse 1.2s ease-in-out infinite;
+}
+
+.mpm-floor em {
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.sec-zoom-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  padding: 6px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 1. Hero wireframe */
+.sz-hero {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 56px;
+  gap: 6px;
+  align-items: center;
+}
+
+.sz-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+}
+
+.sz-kicker {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.sz-h1 {
+  display: block;
+  width: 92%;
+  height: 5px;
+  border-radius: 3px;
+  background: #0f172a;
+}
+
+.sz-h2 {
+  display: block;
+  width: 68%;
+  height: 4px;
+  border-radius: 3px;
+  background: #94a3b8;
+}
+
+.sz-cta {
+  align-self: flex-start;
+  font-size: 8px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #2563eb;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  margin-top: 1px;
+}
+
+.sz-hero-right {
+  height: 52px;
+  border-radius: 6px;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+/* 2. Feature demo wireframe */
+.sz-feature {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.sz-feat-points {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sz-feat-points span {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 4px;
+  border-radius: 4px;
+}
+
+.sz-feat-points span.on {
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.sz-feat-screen {
+  height: 52px;
+  border-radius: 6px;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  display: grid;
+  place-items: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* 3. Bento multi-card grid */
+.sz-bento {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.sz-bento-cell {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 5px 4px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #334155;
+  text-align: center;
+}
+
+.sz-bento-cell.hi {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* 4. Flow diagram wireframe */
+.sz-flow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.sz-flow-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sz-flow-col span {
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.sz-flow-arrow {
+  font-size: 10px;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: -1px;
+}
+
+.sz-flow-hub {
+  font-size: 9px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1.5px solid #2563eb;
+  border-radius: 6px;
+  padding: 9px 6px;
+}
+
+/* 5. Tabs / FAQ wireframe */
+.sz-tabs {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sz-tab-pills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 2px;
+  border-radius: 5px;
+}
+
+.sz-tab-pills span {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 2px 0;
+  border-radius: 4px;
+  color: #64748b;
+}
+
+.sz-tab-pills span.on {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.sz-faq-bar {
+  font-size: 9px;
+  font-weight: 600;
+  color: #1e293b;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 5px;
+  padding: 5px 6px;
+  text-align: center;
+}
+
+/* 6. Other custom area */
+.sz-other {
+  width: 100%;
+  height: 54px;
+  border: 1.5px dashed #93c5fd;
+  background: #f8faff;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.sz-other-icon {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.sz-other-sub {
+  font-size: 8.5px;
+  color: #64748b;
+}
+
+/* ================= Motion Demos ================= */
 .mini-scroll-track {
   width: 4px;
   height: 56px;
@@ -753,6 +1189,11 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
 .mt-pop-enter-from,
 .mt-pop-leave-to {
   opacity: 0;
+}
+
+@keyframes floorPulse {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(1.03); }
 }
 
 @keyframes loopFadeUp {

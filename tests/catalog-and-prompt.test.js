@@ -10,6 +10,9 @@ import {
   PITFALL_ITEMS
 } from '../src/data/index.js'
 import {
+  COMPETITOR_SECTION_OPTIONS,
+  COMPETITOR_TRIGGER_OPTIONS,
+  COMPETITOR_VISUAL_OPTIONS,
   buildCodexPrompt,
   buildCompetitorInspectPrompt,
   buildPresetPrompt,
@@ -224,6 +227,13 @@ test('buildCompetitorInspectPrompt supports unknown indie website URL + anchorTe
   })
   assert.match(screenshotPrompt, /多帧视觉差值拆解/)
   assert.match(screenshotPrompt, /2～3 张连续关键帧截图/)
+
+  for (const sec of COMPETITOR_SECTION_OPTIONS) {
+    assert.ok(sec.shortLabel && sec.anim && sec.whereTag && sec.tip, `section ${sec.id} missing hover tooltip fields`)
+  }
+  for (const opt of [...COMPETITOR_TRIGGER_OPTIONS, ...COMPETITOR_VISUAL_OPTIONS]) {
+    assert.ok(opt.shortLabel && opt.anim && opt.tip, `option ${opt.id} missing hover tooltip fields`)
+  }
 })
 
 test('buildCodexPrompt outputs ordered floors, bound/unbound motions, optional external competitor ref, and pitfall rules', () => {

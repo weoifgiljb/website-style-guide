@@ -22,6 +22,7 @@ const showRawPrompt = ref(false)
 const tooltipState = reactive({
   visible: false,
   title: '',
+  badge: '',
   tip: '',
   anim: 'scroll-enter',
   anchorRect: null
@@ -64,6 +65,7 @@ function showMotionTip(opt, event) {
   if (!opt.anim || !event?.currentTarget) return
   const r = event.currentTarget.getBoundingClientRect()
   tooltipState.title = opt.shortLabel
+  tooltipState.badge = opt.whereTag || ''
   tooltipState.tip = opt.tip
   tooltipState.anim = opt.anim
   tooltipState.anchorRect = {
@@ -225,7 +227,7 @@ onUnmounted(() => {
         <div class="step-card">
           <div class="step-head">
             <span class="step-title">② 选你看到的动效感觉</span>
-            <span class="hover-hint">✨ 鼠标移到下方动效标签上可看实时演示</span>
+            <span class="hover-hint">✨ 鼠标移到下方任意标签，可看位置图 & 实时动效演示</span>
           </div>
 
           <div class="option-row">
@@ -235,11 +237,16 @@ onUnmounted(() => {
                 v-for="sec in COMPETITOR_SECTION_OPTIONS"
                 :key="sec.id"
                 type="button"
-                class="choice-pill"
+                class="choice-pill has-anim"
                 :class="{ active: competitorDraft.sectionArea === sec.id }"
+                @mouseenter="showMotionTip(sec, $event)"
+                @mouseleave="hideMotionTip()"
+                @focus="showMotionTip(sec, $event)"
+                @blur="hideMotionTip()"
                 @click="competitorDraft.sectionArea = sec.id"
               >
-                {{ sec.shortLabel }}
+                <i class="loc-dot">⌖</i>
+                <span>{{ sec.shortLabel }}</span>
               </button>
             </div>
           </div>
@@ -354,6 +361,7 @@ onUnmounted(() => {
     <MotionTooltip
       :visible="tooltipState.visible"
       :title="tooltipState.title"
+      :badge="tooltipState.badge"
       :tip="tooltipState.tip"
       :anim="tooltipState.anim"
       :anchor-rect="tooltipState.anchorRect"
@@ -625,14 +633,17 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
-.play-dot {
+.play-dot,
+.loc-dot {
   font-style: normal;
-  font-size: 8.5px;
-  opacity: 0.55;
+  font-size: 9px;
+  opacity: 0.58;
 }
 
 .choice-pill:hover .play-dot,
-.choice-pill.active .play-dot {
+.choice-pill.active .play-dot,
+.choice-pill:hover .loc-dot,
+.choice-pill.active .loc-dot {
   opacity: 1;
   color: var(--primary);
 }

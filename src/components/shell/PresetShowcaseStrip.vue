@@ -18,6 +18,7 @@ const isCollapsed = ref(false)
 const tooltipState = reactive({
   visible: false,
   title: '',
+  badge: '',
   tip: '',
   anim: 'scroll-enter',
   anchorRect: null
@@ -88,14 +89,43 @@ function shortMotionName(motionId) {
   return item ? item.name : ''
 }
 
-function showPresetMotionTip(motionId, event) {
-  if (!motionId || !event?.currentTarget) return
-  const item = ITEMS_BY_ID[motionId]
-  if (!item) return
+const LAYOUT_ID_TO_SEC = {
+  'S-01': 'sec-hero',
+  'S-02': 'sec-bento',
+  'S-03': 'sec-feature',
+  'S-04': 'sec-flow',
+  'S-05': 'sec-bento',
+  'S-06': 'sec-hero',
+  'S-07': 'sec-hero',
+  'S-08': 'sec-bento',
+  'S-09': 'sec-bento',
+  'S-10': 'sec-flow',
+  'S-11': 'sec-bento',
+  'S-12': 'sec-bento',
+  'S-13': 'sec-tabs',
+  'S-14': 'sec-tabs'
+}
+
+function showPresetFloorTip(fl, floorIndex, totalFloors, event) {
+  if (!event?.currentTarget) return
   const r = event.currentTarget.getBoundingClientRect()
-  tooltipState.title = `${item.code} ${item.name}`
-  tooltipState.tip = item.shortPrompt
-  tooltipState.anim = MOTION_ID_TO_ANIM[motionId] || 'scroll-enter'
+  const layoutItem = ITEMS_BY_ID[fl.layoutId]
+  const motionItem = fl.motionId ? ITEMS_BY_ID[fl.motionId] : null
+
+  if (motionItem) {
+    tooltipState.title = `${motionItem.code} ${motionItem.name}`
+    tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏 · ${shortLayoutName(fl.layoutId)}`
+    tooltipState.tip = motionItem.shortPrompt
+    tooltipState.anim = MOTION_ID_TO_ANIM[fl.motionId] || 'scroll-enter'
+  } else if (layoutItem) {
+    tooltipState.title = `${layoutItem.code} ${shortLayoutName(fl.layoutId)}`
+    tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏位置`
+    tooltipState.tip = layoutItem.scene || layoutItem.prompt
+    tooltipState.anim = LAYOUT_ID_TO_SEC[fl.layoutId] || 'sec-feature'
+  } else {
+    return
+  }
+
   tooltipState.anchorRect = {
     top: r.top,
     bottom: r.bottom,
@@ -170,9 +200,8 @@ function handleCopyPreset(preset) {
           <span
             v-for="(fl, idx) in preset.floors"
             :key="fl.layoutId + '-' + idx"
-            class="chain-pill"
-            :class="{ 'has-motion': Boolean(fl.motionId) }"
-            @mouseenter="showPresetMotionTip(fl.motionId, $event)"
+            class="chain-pill has-motion"
+            @mouseenter="showPresetFloorTip(fl, idx, preset.floors.length, $event)"
             @mouseleave="hidePresetMotionTip()"
           >
             <b>{{ fl.layoutId }}</b>
@@ -203,6 +232,7 @@ function handleCopyPreset(preset) {
     <MotionTooltip
       :visible="tooltipState.visible"
       :title="tooltipState.title"
+      :badge="tooltipState.badge"
       :tip="tooltipState.tip"
       :anim="tooltipState.anim"
       :anchor-rect="tooltipState.anchorRect"

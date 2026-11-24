@@ -2,12 +2,54 @@ const BASELINE_RULE =
   '配色、字体与间距保持 SaleSmartly 官网现有规范，常规交互动效时长控制在 0.25～0.45 秒、整体克制流畅；手机端（390px）自动转为单列简化布局，避免悬浮元素遮挡和大幅晃动。先确认方案再改代码。'
 
 export const COMPETITOR_SECTION_OPTIONS = [
-  { id: 'hero', shortLabel: '首屏', label: '首屏主视觉（Hero）' },
-  { id: 'feature-demo', shortLabel: '功能演示区', label: '中段核心功能演示区' },
-  { id: 'bento-cards', shortLabel: '多栏卡片区', label: 'Bento 卡片 / 多栏卖点区' },
-  { id: 'flow-diagram', shortLabel: '连线架构图', label: '连线流转 / 架构图解区' },
-  { id: 'tabs-accordion', shortLabel: 'Tab / 问答区', label: 'Tab 轮播 / 折叠问答区' },
-  { id: 'other', shortLabel: '其他位置', label: '其他自定义模块' }
+  {
+    id: 'hero',
+    shortLabel: '首屏',
+    anim: 'sec-hero',
+    whereTag: '网页最顶部 · 第 1 屏',
+    tip: '刚打开网页不用往下滚，第一眼看到的大标题 + 按钮 + 主图区',
+    label: '首屏主视觉（Hero）'
+  },
+  {
+    id: 'feature-demo',
+    shortLabel: '功能演示区',
+    anim: 'sec-feature',
+    whereTag: '首屏往下 · 第 2～3 屏',
+    tip: '一边写功能卖点、一边放大张产品界面图的左右图文区',
+    label: '中段核心功能演示区'
+  },
+  {
+    id: 'bento-cards',
+    shortLabel: '多栏卡片区',
+    anim: 'sec-bento',
+    whereTag: '网页中段 · 卡片格子区',
+    tip: '三四张小卡片并排或拼成方格，每张卡讲一个功能亮点',
+    label: 'Bento 卡片 / 多栏卖点区'
+  },
+  {
+    id: 'flow-diagram',
+    shortLabel: '连线架构图',
+    anim: 'sec-flow',
+    whereTag: '网页中段 · 关系图解区',
+    tip: '画着多个渠道小图标，用线条或箭头连向中间系统的示意图',
+    label: '连线流转 / 架构图解区'
+  },
+  {
+    id: 'tabs-accordion',
+    shortLabel: 'Tab / 问答区',
+    anim: 'sec-tabs',
+    whereTag: '网页中后段 / 靠底部',
+    tip: '点一排标签切换内容，或网页下方点问题展开答案的 FAQ 区',
+    label: 'Tab 轮播 / 折叠问答区'
+  },
+  {
+    id: 'other',
+    shortLabel: '其他位置',
+    anim: 'sec-other',
+    whereTag: '网页任意位置',
+    tip: '拿不准叫啥选它就行！只要填上方一句原文词，AI 会自动找准',
+    label: '其他自定义模块'
+  }
 ]
 
 export const COMPETITOR_TRIGGER_OPTIONS = [
