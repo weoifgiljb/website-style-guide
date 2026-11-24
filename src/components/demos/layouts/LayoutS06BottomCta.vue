@@ -21,58 +21,80 @@ defineProps({
   width: 100%;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #3b82f6 100%);
   border-radius: 12px;
-  padding: 16px 14px;
+  padding: 18px 18px;
   color: #ffffff;
   text-align: center;
   box-shadow: 0 10px 20px -8px rgba(37, 99, 235, 0.42);
+  box-sizing: border-box;
 }
 
 .mcta-h {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.35;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .mcta-p {
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: #dbeafe;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  margin-bottom: 12px;
+  line-height: 1.45;
 }
 
 .mcta-btns {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .mcta-b1 {
   background: #ffffff;
   color: var(--primary);
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
+  box-sizing: border-box;
 }
 
 .mcta-b2 {
   background: rgba(255, 255, 255, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.36);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
-  padding: 5px 11px;
+  padding: 6px 13px;
   border-radius: 999px;
+  box-sizing: border-box;
 }
 
 .layout-s06.is-compact {
   padding: 13px 12px;
 }
 
+.layout-s06.is-compact .mcta-h {
+  font-size: 12.5px;
+}
+
+.layout-s06.is-compact .mcta-p {
+  font-size: 10.5px;
+  margin-bottom: 10px;
+}
+
 .layout-s06.is-mobile {
   padding: 14px 12px;
+}
+
+.layout-s06.is-mobile .mcta-h {
+  font-size: 12.5px;
+}
+
+.layout-s06.is-mobile .mcta-p {
+  font-size: 10.5px;
+  margin-bottom: 10px;
 }
 
 .layout-s06.is-mobile .mcta-btns {
@@ -85,6 +107,7 @@ defineProps({
 .layout-s06.is-mobile .mcta-b1,
 .layout-s06.is-mobile .mcta-b2 {
   width: 100%;
+  font-size: 11px;
   padding: 6px 12px;
 }
 </style>

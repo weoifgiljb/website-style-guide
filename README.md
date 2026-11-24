@@ -27,8 +27,8 @@ npm run preview
 
 - `src/data/`：版式（`layouts.js`）、动效（`motions.js`）、避坑准则（`pitfalls.js`）与预设模板（`categories.js`）元数据
 - `src/components/demos/`：34 个独立可交互微缩演示组件（`layouts/`、`motions/`、`pitfalls/`）
-- `src/components/shell/`：页面顶部、吸顶筛选栏、目录卡片、底部组合悬浮栏、整页骨架拼装抽屉与轻提示组件
-- `src/composables/useCatalogStore.js`：目录筛选、组合勾选、楼层排序与动效绑定状态管理
+- `src/components/shell/`：页面顶部、吸顶筛选栏、目录卡片、底部组合悬浮栏、整页骨架拼装抽屉、楼层动效预览（`BlueprintFloorPreview.vue`）与轻提示组件
+- `src/composables/useCatalogStore.js`：目录筛选、双端视图切换、组合勾选、楼层排序与动效绑定状态管理
 - `src/utils/promptBuilder.js`：搜索过滤与 Codex 结构化楼层需求话术生成器
 - `tests/`：数据完整性、话术生成、组件注册与构建产物自动化测试
 
@@ -36,16 +36,18 @@ npm run preview
 
 1. **新建微缩演示组件**：
    - 新增版式：在 `src/components/demos/layouts/` 下创建 `LayoutSxxXxx.vue`（接收 `viewport` 与 `compact` props，并提供 `.is-mobile` 响应式样式），然后在 `src/components/demos/layouts/index.js` 的 `LAYOUT_DEMO_MAP` 中注册。
-   - 新增动效：在 `src/components/demos/motions/` 下创建 `MotionXxx.vue`（接收 `replayTick` prop，内置 `.stage-badge` 标签与 `var(--dur)` 节奏变量），然后在 `src/components/demos/motions/index.js` 的 `MOTION_DEMO_MAP` 中注册。
+   - 新增动效：在 `src/components/demos/motions/` 下创建 `MotionXxx.vue`（接收 `replayTick` 与 `viewport` props，内置 `.stage-badge` 标签、`var(--dur)` 节奏变量与 `.is-mobile` 响应式样式），然后在 `src/components/demos/motions/index.js` 的 `MOTION_DEMO_MAP` 中注册。
 2. **补充元数据条目**：
    - 在 `src/data/layouts.js` 或 `src/data/motions.js` 中追加对应条目，确保 `demoKey` 与刚注册的组件键名一致，填写 `id`、`code`、`cat`、`kind`、`name`、`en`、`scene`、`mobileTip`、`prompt`、`shortPrompt`。
 3. **验证通过**：
    - 运行 `npm run build` 与 `npm test`，确认组件编译与注册表校验全部通过。
 
-## 3 步部署到 GitHub Pages
+## GitHub Pages 自动部署（`gh-pages` 零配置激活）
 
-本项目已在 `vite.config.js` 配置 `base: './'` 相对路径，并内置 `.github/workflows/deploy.yml` 自动部署工作流，适配任意仓库名：
+线上预览地址：<https://weoifgiljb.github.io/website-style-guide/>
 
-1. **推送代码到 GitHub**：将代码推送到 GitHub 仓库的 `main` 分支。
-2. **开启 GitHub Actions 部署源**：进入仓库 **Settings** → **Pages**，在 **Build and deployment** 下的 **Source** 选择 **`GitHub Actions`**。
-3. **自动测试与发布**：每次推送到 `main` 分支（或在 **Actions** 标签页手动点击 `Run workflow`）都会自动执行 `npm test` 与 `npm run build` 并发布最新静态站点。
+本项目已在 `vite.config.js` 配置 `base: './'` 相对路径，并通过 `.github/workflows/deploy.yml` 使用 `peaceiris/actions-gh-pages@v4` 自动发布到 `gh-pages` 分支：
+
+1. **推送代码到 `main` 分支**：每次推送到 `main`（或在 **Actions** 标签页手动点击 `Run workflow`）会自动执行 `npm ci`、`npm test` 与 `npm run build`。
+2. **自动生成 `.nojekyll` 并推送到 `gh-pages` 分支**：工作流会将 `./dist` 构建产物直接发布至 `gh-pages` 分支（`enable_jekyll: false`），公开仓库首次推送后即可自动激活 GitHub Pages，无需手动初始化 Pages Source。
+3. **访问线上站点**：部署完成后即可直接访问 `https://weoifgiljb.github.io/website-style-guide/`。

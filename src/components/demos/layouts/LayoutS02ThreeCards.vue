@@ -32,47 +32,51 @@ const cards = [
   width: 100%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .m3-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 8px;
+  border-radius: 11px;
+  padding: 13px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .m3-ico {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   background: var(--primary-soft);
   color: var(--primary);
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 13.5px;
   flex-shrink: 0;
 }
 
 .m3-body {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .m3-title-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .m3-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -81,13 +85,14 @@ const cards = [
 .m3-t {
   height: 7px;
   flex: 1;
-  max-width: 36px;
+  min-width: 0;
+  max-width: 40px;
   border-radius: 3px;
   background: #1e293b;
 }
 
 .m3-l {
-  height: 5px;
+  height: 5.5px;
   width: 100%;
   border-radius: 3px;
   background: var(--border-strong);
@@ -97,8 +102,23 @@ const cards = [
   width: 70%;
 }
 
+.layout-s02.is-compact {
+  gap: 8px;
+}
+
 .layout-s02.is-compact .m3-card {
-  padding: 8px 7px;
+  padding: 9px 8px;
+  gap: 6px;
+}
+
+.layout-s02.is-compact .m3-ico {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.layout-s02.is-compact .m3-label {
+  font-size: 10px;
 }
 
 .layout-s02.is-mobile {
@@ -109,7 +129,17 @@ const cards = [
 .layout-s02.is-mobile .m3-card {
   flex-direction: row;
   align-items: center;
-  padding: 8px 10px;
-  gap: 9px;
+  padding: 9px 11px;
+  gap: 10px;
+}
+
+.layout-s02.is-mobile .m3-ico {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.layout-s02.is-mobile .m3-label {
+  font-size: 10.5px;
 }
 </style>

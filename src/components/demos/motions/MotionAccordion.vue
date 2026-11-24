@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const openIdx = ref(0)
@@ -24,7 +25,7 @@ function toggleItem(idx) {
 </script>
 
 <template>
-  <div class="motion-accordion">
+  <div class="motion-accordion" :class="{ 'is-mobile': props.viewport === 'mobile' }">
     <span class="stage-badge">直接点问题展开</span>
     <div class="demo-acc">
       <div
@@ -34,7 +35,7 @@ function toggleItem(idx) {
         :class="{ open: openIdx === idx }"
       >
         <button type="button" class="acc-btn" @click.stop="toggleItem(idx)">
-          <span>{{ item.q }}</span>
+          <span class="acc-q-text">{{ item.q }}</span>
           <span class="acc-arrow">▼</span>
         </button>
         <div class="acc-panel">
@@ -58,37 +59,45 @@ function toggleItem(idx) {
 
 .demo-acc {
   width: 100%;
-  max-width: 290px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .acc-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .acc-btn {
   width: 100%;
   border: none;
   background: transparent;
-  padding: 8px 12px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
   text-align: left;
 }
 
+.acc-q-text {
+  min-width: 0;
+  line-height: 1.35;
+}
+
 .acc-arrow {
   font-size: 11px;
   color: var(--text-muted);
+  flex-shrink: 0;
   transition:
     transform var(--dur, 0.28s) var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
     color var(--dur, 0.28s) ease;
@@ -111,12 +120,32 @@ function toggleItem(idx) {
 
 .acc-inner {
   overflow: hidden;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-secondary);
-  padding: 0 12px;
+  padding: 0 14px;
+  line-height: 1.45;
 }
 
 .acc-inner p {
-  padding: 0 0 9px;
+  padding: 0 0 10px;
+}
+
+.motion-accordion.is-mobile .demo-acc {
+  max-width: 100%;
+  gap: 6px;
+}
+
+.motion-accordion.is-mobile .acc-btn {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.motion-accordion.is-mobile .acc-inner {
+  font-size: 11.5px;
+  padding: 0 10px;
+}
+
+.motion-accordion.is-mobile .acc-inner p {
+  padding: 0 0 8px;
 }
 </style>

@@ -10,6 +10,7 @@ import {
   compileStyle
 } from 'vue/compiler-sfc'
 import { build } from 'vite'
+import { MOTION_ITEMS } from '../src/data/motions.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = path.resolve(__dirname, '..')
@@ -21,10 +22,11 @@ const SHELL_COMPONENTS = [
   'CatalogCard.vue',
   'ComboFloatingBar.vue',
   'PageBlueprintDrawer.vue',
+  'BlueprintFloorPreview.vue',
   'ToastNotice.vue'
 ]
 
-test('GitHub Pages workflow (.github/workflows/deploy.yml) and README.md exist and configure artifact upload & deployment', () => {
+test('GitHub Pages workflow (.github/workflows/deploy.yml) and README.md configure peaceiris/actions-gh-pages@v4 deployment', () => {
   const workflowPath = path.join(ROOT_DIR, '.github', 'workflows', 'deploy.yml')
   const readmePath = path.join(ROOT_DIR, 'README.md')
 
@@ -34,23 +36,28 @@ test('GitHub Pages workflow (.github/workflows/deploy.yml) and README.md exist a
   const workflow = fs.readFileSync(workflowPath, 'utf8')
   assert.match(workflow, /branches:\s*\[?\s*['"]?main['"]?\s*\]?/, 'deploy.yml must trigger on main branch')
   assert.match(workflow, /workflow_dispatch/, 'deploy.yml must support workflow_dispatch')
-  assert.match(workflow, /pages:\s*write/, 'deploy.yml must set pages: write permission')
-  assert.match(workflow, /id-token:\s*write/, 'deploy.yml must set id-token: write permission')
+  assert.match(workflow, /contents:\s*write/, 'deploy.yml must set contents: write permission')
   assert.match(workflow, /npm\s+ci/, 'deploy.yml must run npm ci')
   assert.match(workflow, /npm\s+test/, 'deploy.yml must run npm test')
   assert.match(workflow, /npm\s+run\s+build/, 'deploy.yml must run npm run build')
-  assert.match(workflow, /actions\/configure-pages@v\d+/, 'deploy.yml must configure GitHub Pages')
-  assert.match(workflow, /actions\/upload-pages-artifact@v\d+/, 'deploy.yml must use actions/upload-pages-artifact')
-  assert.match(workflow, /path:\s*['"]?\.\/dist['"]?/, 'deploy.yml must upload ./dist')
-  assert.match(workflow, /actions\/deploy-pages@v\d+/, 'deploy.yml must use actions/deploy-pages')
+  assert.match(workflow, /peaceiris\/actions-gh-pages@v4/, 'deploy.yml must use peaceiris/actions-gh-pages@v4')
+  assert.match(workflow, /publish_dir:\s*['"]?\.\/dist['"]?/, 'deploy.yml must publish ./dist')
+  assert.match(workflow, /enable_jekyll:\s*false/, 'deploy.yml must disable Jekyll (.nojekyll)')
 
   const readme = fs.readFileSync(readmePath, 'utf8')
   assert.match(readme, /npm run dev/, 'README.md must document local dev command')
   assert.match(readme, /npm test/, 'README.md must document test command')
-  assert.match(readme, /GitHub Actions/, 'README.md must document GitHub Pages Source: GitHub Actions')
+  assert.match(readme, /gh-pages/, 'README.md must document automatic gh-pages branch deployment')
+  assert.match(
+    readme,
+    /https:\/\/weoifgiljb\.github\.io\/website-style-guide\//,
+    'README.md must document online preview URL'
+  )
 })
 
-test('all 6 shell components, src/App.vue, and src/main.js exist and compile cleanly with vue/compiler-sfc', () => {
+test('all 7 shell components, src/App.vue, and src/main.js exist and compile cleanly with vue/compiler-sfc', () => {
+  assert.equal(SHELL_COMPONENTS.length, 7)
+
   const mainJsPath = path.join(ROOT_DIR, 'src', 'main.js')
   assert.ok(fs.existsSync(mainJsPath), `Missing entry file: ${mainJsPath}`)
   const mainSource = fs.readFileSync(mainJsPath, 'utf8')
@@ -122,21 +129,32 @@ test('all 6 shell components, src/App.vue, and src/main.js exist and compile cle
   }
 })
 
-test('shell components enforce key UI contracts (stage-badge deduplication, preset drawer open, viewport switch, Esc close)', () => {
+test('shell components enforce decluttered 2-col layout, dual-viewport switching, phone shell, and live M-01..M-14 floor preview', () => {
+  const appSource = fs.readFileSync(path.join(ROOT_DIR, 'src', 'App.vue'), 'utf8')
+  assert.match(
+    appSource,
+    /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    'App.vue must use spacious 2-column catalog grid'
+  )
+
   const hero = fs.readFileSync(path.join(SHELL_DIR, 'HeroHeader.vue'), 'utf8')
-  assert.match(hero, /官网常用样式 & 动画效果速查（不用背，看着挑）/, 'HeroHeader must render exact H1')
+  assert.match(hero, /官网常用样式 & 动效速查/, 'HeroHeader must render concise H1')
+  assert.doesNotMatch(hero, /badge-pill/, 'HeroHeader must not render cluttered .badge-pill')
+  assert.doesNotMatch(hero, /preset-strip/, 'HeroHeader must not render .preset-strip (moved to drawer)')
   assert.match(hero, /0\.28s/, 'HeroHeader must include 0.28s speed option')
   assert.match(hero, /0\.5s/, 'HeroHeader must include 0.5s speed option')
   assert.match(hero, /1\.05s/, 'HeroHeader must include 1.05s speed option')
-  assert.match(hero, /applyPreset/, 'HeroHeader must invoke applyPreset')
-  assert.match(hero, /openDrawer/, 'HeroHeader preset click must also openDrawer')
+  assert.match(hero, /cardViewport/, 'HeroHeader must bind cardViewport')
+  assert.match(hero, /setCardViewport\(['"]desktop['"]\)/, 'HeroHeader must allow switching to Web desktop viewport')
+  assert.match(hero, /setCardViewport\(['"]mobile['"]\)/, 'HeroHeader must allow switching to mobile viewport')
 
   const toolbar = fs.readFileSync(path.join(SHELL_DIR, 'FilterToolbar.vue'), 'utf8')
   assert.match(toolbar, /position:\s*sticky/, 'FilterToolbar must be sticky')
-  assert.match(toolbar, /搜编号、版式、动效或场景/, 'FilterToolbar must include exact search placeholder')
+  assert.match(toolbar, /搜编号或名称，如 S-08 \/ Bento \/ 跑马灯/, 'FilterToolbar must include exact search placeholder')
   assert.match(toolbar, /🧩 整页拼装预览/, 'FilterToolbar must include blueprint trigger button')
 
   const card = fs.readFileSync(path.join(SHELL_DIR, 'CatalogCard.vue'), 'utf8')
+  assert.doesNotMatch(card, /mobile-tip/, 'CatalogCard must NOT contain .mobile-tip text')
   assert.match(
     card,
     /item\.kind\s*===\s*['"]style['"][\s\S]*stage-badge/,
@@ -144,13 +162,18 @@ test('shell components enforce key UI contracts (stage-badge deduplication, pres
   )
   assert.match(
     card,
-    /v-if=["']item\.mobileTip["']/,
-    'CatalogCard must render .mobile-tip for all cards with item.mobileTip'
+    /:viewport=["']effectiveViewport["']/,
+    'CatalogCard must pass :viewport="effectiveViewport" to demo component'
   )
-  assert.doesNotMatch(
+  assert.match(
     card,
-    /item\.kind\s*===\s*['"]style['"]\s*&&\s*item\.mobileTip/,
-    'CatalogCard must not gate .mobile-tip behind item.kind === "style"'
+    /is-mobile-frame/,
+    'CatalogCard must render .is-mobile-frame phone shell when mobile'
+  )
+  assert.match(
+    card,
+    /setLocalViewport\(['"]mobile['"]\)/,
+    'CatalogCard must support per-card mobile switch'
   )
   assert.match(card, /DEMO_COMPONENTS/, 'CatalogCard must dynamically render DEMO_COMPONENTS[item.demoKey]')
 
@@ -163,12 +186,25 @@ test('shell components enforce key UI contracts (stage-badge deduplication, pres
 
   const drawer = fs.readFileSync(path.join(SHELL_DIR, 'PageBlueprintDrawer.vue'), 'utf8')
   assert.match(drawer, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'PageBlueprintDrawer must render exact title')
-  assert.match(drawer, /LAYOUT_DEMO_MAP/, 'PageBlueprintDrawer must render live floors with LAYOUT_DEMO_MAP')
+  assert.match(drawer, /PAGE_PRESETS/, 'PageBlueprintDrawer must render quick presets')
+  assert.match(drawer, /BlueprintFloorPreview/, 'PageBlueprintDrawer must render floors via BlueprintFloorPreview')
+  assert.match(drawer, /unboundSelectedMotions/, 'PageBlueprintDrawer must render standalone unboundSelectedMotions preview')
   assert.match(drawer, /width:\s*402px/, 'PageBlueprintDrawer phone frame must be 402px (390px inner + 12px bezel)')
   assert.match(drawer, /:for=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind label :for on floor motion select')
   assert.match(drawer, /:id=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind :id on floor motion select')
   assert.match(drawer, /Escape/, 'PageBlueprintDrawer must support Escape key to close')
   assert.match(drawer, /onUnmounted/, 'PageBlueprintDrawer must clean up listeners & body scroll lock onUnmounted')
+
+  const floorPreview = fs.readFileSync(path.join(SHELL_DIR, 'BlueprintFloorPreview.vue'), 'utf8')
+  assert.match(floorPreview, /LAYOUT_DEMO_MAP/, 'BlueprintFloorPreview must render live floor layouts with LAYOUT_DEMO_MAP')
+  assert.match(floorPreview, /\bonUnmounted\s*\(/, 'BlueprintFloorPreview must register onUnmounted cleanup')
+  for (const m of MOTION_ITEMS) {
+    assert.match(
+      floorPreview,
+      new RegExp(`['"]${m.id}['"]`),
+      `BlueprintFloorPreview.vue must handle motion ${m.id}`
+    )
+  }
 })
 
 test('production build output dist/index.html exists, mounts #app, and uses relative ./assets/ paths for GitHub Pages', async () => {

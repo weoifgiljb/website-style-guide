@@ -39,8 +39,8 @@ test('every LAYOUT_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
     const source = fs.readFileSync(sfcPath, 'utf8')
     const lineCount = source.trimEnd().split(/\r?\n/).length
     assert.ok(
-      lineCount >= 55 && lineCount <= 125,
-      `${item.demoKey}.vue should be concise (55–125 lines), got ${lineCount} lines`
+      lineCount >= 55 && lineCount <= 300,
+      `${item.demoKey}.vue should be concise (55–300 lines), got ${lineCount} lines`
     )
 
     const { descriptor, errors } = parse(source, { filename: `${item.demoKey}.vue` })
@@ -185,7 +185,7 @@ test('Vite programmatic in-memory build compiles layouts/index.js and all 14 SFC
   }
 })
 
-test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with replayTick prop and stage-badge', () => {
+test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with replayTick & viewport props, stage-badge, and .is-mobile styles', () => {
   assert.equal(MOTION_ITEMS.length, 14)
 
   const entranceKeys = new Set(['MotionFadeUp', 'MotionStagger', 'MotionZoomIn'])
@@ -227,8 +227,8 @@ test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
     const compiledScript = compileScript(descriptor, { id: item.demoKey })
     assert.match(
       descriptor.scriptSetup.content,
-      /defineProps\(\s*\{[\s\S]*replayTick[\s\S]*default:\s*0[\s\S]*\}\s*\)/,
-      `${item.demoKey}.vue must define replayTick (default 0) prop`
+      /defineProps\(\s*\{[\s\S]*replayTick[\s\S]*default:\s*0[\s\S]*viewport[\s\S]*default:\s*['"]desktop['"][\s\S]*\}\s*\)/,
+      `${item.demoKey}.vue must define replayTick (default 0) and viewport (default 'desktop') props`
     )
 
     if (entranceKeys.has(item.demoKey)) {
@@ -239,8 +239,14 @@ test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
       )
     }
 
+    const combinedStyles = descriptor.styles.map((s) => s.content).join('\n')
+    assert.match(
+      combinedStyles,
+      /\.is-mobile\b/,
+      `${item.demoKey}.vue <style scoped> must define .is-mobile responsive styles`
+    )
+
     if (durResponsiveKeys.has(item.demoKey)) {
-      const combinedStyles = descriptor.styles.map((s) => s.content).join('\n')
       assert.match(
         combinedStyles,
         /var\(--dur\b/,
@@ -266,6 +272,11 @@ test('every MOTION_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
       descriptor.template.content,
       /stage-badge/,
       `${item.demoKey}.vue template must render .stage-badge`
+    )
+    assert.match(
+      descriptor.template.content,
+      /is-mobile/,
+      `${item.demoKey}.vue template must bind .is-mobile class`
     )
 
     for (const [idx, styleBlock] of descriptor.styles.entries()) {

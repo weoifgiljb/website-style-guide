@@ -3,58 +3,58 @@ export const CATEGORIES = [
     id: 'all',
     tabLabel: '全部',
     label: '全部',
-    sectionTitle: '全部样式、动效与避坑速查',
+    sectionTitle: '全部样式与动效',
     sectionNum: '★',
-    sectionDesc: '覆盖 14 种官网版式、14 种交互动效与 6 项手机端降级避坑准则'
+    sectionDesc: ''
   },
   {
     id: 'style',
-    tabLabel: '📐 常用版式',
-    label: '📐 常用版式',
-    sectionTitle: '官网常用版式样式库（先定结构，复用最快）',
+    tabLabel: '常用版式',
+    label: '常用版式',
+    sectionTitle: '常用页面版式（S-01 ~ S-14）',
     sectionNum: 'S',
-    sectionDesc: '和钉钉文档「三、加样式与动效」速选清单对应，可直接报编号给 Codex',
+    sectionDesc: '先挑页面骨架，可直接报编号给 Codex',
     numStyle: 'background:#ecfdf5;color:#047857;'
   },
   {
     id: 'enter',
-    tabLabel: '① 进场出现',
-    label: '① 进场出现',
-    sectionTitle: '进场出现类（页面打开 / 滚动到该区块时出现）',
+    tabLabel: '进场动效',
+    label: '进场动效',
+    sectionTitle: '进场出现动效',
     sectionNum: '1',
-    sectionDesc: '点卡片右上角「重播」可反复看入场手感'
+    sectionDesc: '点右上角「重播」反复看入场手感'
   },
   {
     id: 'hover',
-    tabLabel: '② 悬停与点击',
-    label: '② 悬停与点击',
-    sectionTitle: '鼠标悬停与点击反馈类（桌面端交互手感）',
+    tabLabel: '悬停点击',
+    label: '悬停点击',
+    sectionTitle: '悬停与点击反馈',
     sectionNum: '2',
-    sectionDesc: '把鼠标移到演示区卡片上，或直接点击 Tab / FAQ 亲身体验'
+    sectionDesc: '移入鼠标或直接点击卡片内元素体验'
   },
   {
     id: 'scroll',
-    tabLabel: '③ 滚动联动',
-    label: '③ 滚动联动',
-    sectionTitle: '滚动联动类（随着访客上下滚动触发）',
+    tabLabel: '滚动联动',
+    label: '滚动联动',
+    sectionTitle: '滚动联动动效',
     sectionNum: '3',
-    sectionDesc: '可直接在演示框内上下滚动 / 拖动滑块，或点「自动演示」'
+    sectionDesc: '可在框内滚动、拖滑块或点自动演示'
   },
   {
     id: 'loop',
-    tabLabel: '④ 循环展示',
-    label: '④ 循环展示',
-    sectionTitle: '循环展示类（无需操作也会持续缓慢运动）',
+    tabLabel: '循环展示',
+    label: '循环展示',
+    sectionTitle: '持续循环动效',
     sectionNum: '4',
-    sectionDesc: '注意克制幅度，避免长时间看觉得晃眼'
+    sectionDesc: '低幅度克制循环，鼠标移入可暂停'
   },
   {
     id: 'pitfall',
-    tabLabel: '🛡️ 手机端与避坑',
-    label: '🛡️ 手机端与避坑',
-    sectionTitle: '手机端简化 & 动效避坑对比专区（390px 降级与克制准则）',
+    tabLabel: '避坑对比',
+    label: '避坑对比',
+    sectionTitle: '动效克制与手机端避坑对比',
     sectionNum: 'P',
-    sectionDesc: '直观对比推荐克制做法与常见踩坑反例，勾选即可把约束同步写进 Codex 话术',
+    sectionDesc: '正反例同屏对照，避免花哨晃眼与窄屏挤压',
     numStyle: 'background:#fef2f2;color:#dc2626;'
   }
 ]

@@ -27,48 +27,63 @@ const channels = [
 .layout-s04 {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .mch-cell {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 9px 6px;
+  border-radius: 10px;
+  padding: 12px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 10.5px;
+  gap: 7px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text);
   box-shadow: var(--shadow-sm);
-  white-space: nowrap;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .logo-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .mch-name {
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layout-s04.is-compact {
+  gap: 7px;
 }
 
 .layout-s04.is-compact .mch-cell {
   padding: 8px 6px;
+  font-size: 10.5px;
 }
 
 .layout-s04.is-mobile {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
 
 .layout-s04.is-mobile .mch-cell {
   justify-content: flex-start;
   padding: 8px 10px;
+  font-size: 10.5px;
+}
+
+.layout-s04.is-mobile .logo-dot {
+  width: 8px;
+  height: 8px;
 }
 </style>

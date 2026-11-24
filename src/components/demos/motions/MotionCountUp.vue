@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const metrics = [
@@ -63,6 +64,13 @@ function runCountUp() {
   rafId = requestAnimationFrame(step)
 }
 
+watch(
+  () => props.replayTick,
+  () => {
+    runCountUp()
+  }
+)
+
 onMounted(() => {
   if (typeof IntersectionObserver !== 'undefined' && rootRef.value) {
     observer = new IntersectionObserver(
@@ -85,7 +93,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="motion-count-up">
+  <div
+    ref="rootRef"
+    class="motion-count-up"
+    :class="{ 'is-mobile': props.viewport === 'mobile' }"
+  >
     <span class="stage-badge">1 秒滚到目标值</span>
     <button type="button" class="stage-action" @click.stop="runCountUp">↻ 重播递增</button>
     <div class="demo-count-grid">
@@ -109,20 +121,23 @@ onUnmounted(() => {
 .demo-count-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
   width: 100%;
+  max-width: 420px;
 }
 
 .count-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px 6px;
+  padding: 14px 8px;
   text-align: center;
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
 }
 
 .count-num {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
@@ -130,8 +145,27 @@ onUnmounted(() => {
 }
 
 .count-lbl {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+.motion-count-up.is-mobile .demo-count-grid {
+  max-width: 100%;
+  gap: 6px;
+}
+
+.motion-count-up.is-mobile .count-card {
+  padding: 10px 4px;
+  border-radius: 9px;
+}
+
+.motion-count-up.is-mobile .count-num {
+  font-size: 15px;
+}
+
+.motion-count-up.is-mobile .count-lbl {
+  font-size: 10px;
+  margin-top: 3px;
 }
 </style>

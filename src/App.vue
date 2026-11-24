@@ -81,12 +81,7 @@ function resetFilters() {
       </div>
 
       <div class="tip-banner">
-        <span class="tip-icon" aria-hidden="true">💡</span>
-        <div>
-          <strong>选节奏小口诀：</strong>ToB 官网动效讲究「克制、利落」——大部分交互时长控制在
-          <strong>0.2～0.5 秒</strong> 最舒服；一个页面挑 <strong>1～2 个重点区块</strong>
-          做吸睛动效就够了，全页乱飞反而显花哨，手机端记得让 Codex 自动简化降级。
-        </div>
+        💡 节奏建议：常规交互控制在 0.25～0.45s，单页挑 1～2 个重点动效最显高级。
       </div>
     </main>
 
@@ -144,8 +139,8 @@ function resetFilters() {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
 .empty-state {
@@ -185,31 +180,24 @@ function resetFilters() {
   background: var(--warn-soft);
   border: 1px solid #fde68a;
   border-radius: var(--radius-md);
-  padding: 14px 18px;
-  font-size: 13.5px;
+  padding: 11px 16px;
+  font-size: 13px;
   color: #92400e;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-top: 8px;
 }
 
-.tip-banner strong {
-  color: #78350f;
-}
-
-.tip-icon {
-  font-size: 16px;
-  line-height: 1.4;
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
   .main {
     padding: 20px 16px 36px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

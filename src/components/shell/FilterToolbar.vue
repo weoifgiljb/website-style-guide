@@ -6,7 +6,7 @@ import { useCatalogStore } from '../../composables/useCatalogStore.js'
 const {
   activeCategory,
   searchQuery,
-  floorOrder,
+  selectedIds,
   setCategory,
   openDrawer
 } = useCatalogStore()
@@ -36,7 +36,8 @@ const categoryCounts = computed(() => {
           :aria-selected="activeCategory === cat.id"
           @click="setCategory(cat.id)"
         >
-          {{ cat.tabLabel }}（{{ categoryCounts[cat.id] || 0 }}）
+          <span class="tab-text">{{ cat.tabLabel }}</span>
+          <span class="tab-count">{{ categoryCounts[cat.id] || 0 }}</span>
         </button>
       </div>
 
@@ -46,8 +47,8 @@ const categoryCounts = computed(() => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="搜编号、版式、动效或场景，如：S-08 / Bento / 手机端 / 跑马灯"
-            aria-label="搜索编号、版式、动效或场景"
+            placeholder="搜编号或名称，如 S-08 / Bento / 跑马灯"
+            aria-label="搜编号或名称"
           />
           <button
             v-if="searchQuery"
@@ -62,8 +63,8 @@ const categoryCounts = computed(() => {
 
         <button type="button" class="blueprint-btn" @click="openDrawer()">
           <span>🧩 整页拼装预览</span>
-          <span v-if="floorOrder.length > 0" class="blueprint-badge">
-            {{ floorOrder.length }}
+          <span v-if="selectedIds.length > 0" class="blueprint-badge">
+            {{ selectedIds.length }}
           </span>
         </button>
       </div>
@@ -80,11 +81,11 @@ const categoryCounts = computed(() => {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
+  padding: 10px 24px;
 }
 
 .toolbar {
-  max-width: 1220px;
+  max-width: 1260px;
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -96,14 +97,17 @@ const categoryCounts = computed(() => {
 .filter-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
 }
 
 .filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-secondary);
-  padding: 6px 13px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 12.5px;
   font-weight: 500;
@@ -116,9 +120,34 @@ const categoryCounts = computed(() => {
   color: var(--primary);
 }
 
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.filter-tab:hover .tab-count {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
 .filter-tab.active {
   background: var(--text);
   border-color: var(--text);
+  color: #ffffff;
+}
+
+.filter-tab.active .tab-count {
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
 
@@ -127,20 +156,20 @@ const categoryCounts = computed(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  flex: 1 1 360px;
+  flex: 1 1 340px;
   justify-content: flex-end;
 }
 
 .search-box {
   position: relative;
-  flex: 1 1 260px;
-  max-width: 340px;
-  min-width: 220px;
+  flex: 1 1 240px;
+  max-width: 320px;
+  min-width: 210px;
 }
 
 .search-box input {
   width: 100%;
-  padding: 8px 30px 8px 34px;
+  padding: 7px 30px 7px 34px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);

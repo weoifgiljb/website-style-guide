@@ -33,43 +33,45 @@ defineProps({
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ma-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 8px 10px;
+  border-radius: 10px;
+  padding: 11px 14px;
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
 .ma-txt {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  min-width: 0;
 }
 
 .ma-tag {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--primary);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .ma-t {
-  height: 7px;
+  height: 8px;
   width: 78%;
   border-radius: 3px;
   background: #1e293b;
 }
 
 .ma-l {
-  height: 5px;
+  height: 5.5px;
   width: 100%;
   border-radius: 3px;
   background: var(--border-strong);
@@ -80,32 +82,45 @@ defineProps({
 }
 
 .ma-img {
-  height: 40px;
-  border-radius: 6px;
+  height: 48px;
+  border-radius: 7px;
   background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
   border: 1px solid #c7d2fe;
   display: grid;
   place-items: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--primary);
+  min-width: 0;
 }
 
 .layout-s03.is-compact {
   gap: 6px;
 }
 
+.layout-s03.is-compact .ma-row {
+  padding: 8px 10px;
+  gap: 8px;
+}
+
 .layout-s03.is-compact .ma-img {
-  height: 35px;
+  height: 36px;
+  font-size: 10px;
+}
+
+.layout-s03.is-mobile {
+  gap: 7px;
 }
 
 .layout-s03.is-mobile .ma-row {
   grid-template-columns: 1fr;
-  gap: 6px;
+  padding: 9px 10px;
+  gap: 7px;
 }
 
 .layout-s03.is-mobile .ma-img {
   order: -1;
-  height: 34px;
+  height: 36px;
+  font-size: 10px;
 }
 </style>

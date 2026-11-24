@@ -12,6 +12,8 @@ const floorMotionMap = reactive({})
 const pageTarget = ref('')
 const isDrawerOpen = ref(false)
 const previewViewport = ref('desktop')
+const cardViewport = ref('desktop')
+const cardViewportVersion = ref(0)
 const toastMessage = ref('')
 const toastVisible = ref(false)
 
@@ -207,6 +209,14 @@ function setPreviewViewport(vp) {
   previewViewport.value = vp === 'mobile' ? 'mobile' : 'desktop'
 }
 
+function setCardViewport(vp) {
+  const next = vp === 'mobile' ? 'mobile' : 'desktop'
+  cardViewport.value = next
+  cardViewportVersion.value += 1
+  replayTick.value += 1
+  showToast(next === 'mobile' ? '已切换为手机端组件视图' : '已切换为 Web 桌面端视图')
+}
+
 async function copyText(text, successMsg) {
   const msg = successMsg || '已复制到剪贴板'
   try {
@@ -249,6 +259,8 @@ export function useCatalogStore() {
     pageTarget,
     isDrawerOpen,
     previewViewport,
+    cardViewport,
+    cardViewportVersion,
     toastMessage,
     toastVisible,
     filteredItems,
@@ -269,6 +281,7 @@ export function useCatalogStore() {
     openDrawer,
     closeDrawer,
     setPreviewViewport,
+    setCardViewport,
     showToast,
     copyText
   }

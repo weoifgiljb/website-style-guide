@@ -2,7 +2,8 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  replayTick: { type: Number, default: 0 }
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const animKey = ref(0)
@@ -20,7 +21,7 @@ watch(
 </script>
 
 <template>
-  <div class="motion-fade-up">
+  <div class="motion-fade-up" :class="{ 'is-mobile': props.viewport === 'mobile' }">
     <span class="stage-badge">进场演示</span>
     <button type="button" class="stage-action" @click.stop="replay">↻ 重播</button>
     <div :key="animKey" class="demo-fade-box anim-fade-up">
@@ -42,35 +43,57 @@ watch(
 
 .demo-fade-box {
   width: 100%;
-  max-width: 260px;
+  max-width: 380px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
 .df-tag {
   display: inline-block;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--primary);
   background: var(--primary-soft);
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 999px;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
 .df-h {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  line-height: 1.35;
 }
 
 .df-p {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.motion-fade-up.is-mobile .demo-fade-box {
+  max-width: 100%;
+  padding: 12px 14px;
+}
+
+.motion-fade-up.is-mobile .df-tag {
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+.motion-fade-up.is-mobile .df-h {
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+
+.motion-fade-up.is-mobile .df-p {
+  font-size: 11.5px;
 }
 
 .anim-fade-up {

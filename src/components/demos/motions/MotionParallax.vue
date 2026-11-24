@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const offset = ref(0)
@@ -15,16 +16,18 @@ function cancelAuto() {
   }
 }
 
+const factor = computed(() => (props.viewport === 'mobile' ? 0.5 : 1))
+
 const orbStyle = computed(() => ({
-  transform: `translate(${offset.value * 0.38}px, ${offset.value * 0.14}px)`
+  transform: `translate(${offset.value * 0.38 * factor.value}px, ${offset.value * 0.14 * factor.value}px)`
 }))
 
 const tagStyle = computed(() => ({
-  transform: `translate(${-offset.value * 0.28}px, ${-offset.value * 0.08}px)`
+  transform: `translate(${-offset.value * 0.28 * factor.value}px, ${-offset.value * 0.08 * factor.value}px)`
 }))
 
 const frontStyle = computed(() => ({
-  transform: `translate(${offset.value * 0.12}px, 0px)`
+  transform: `translate(${offset.value * 0.12 * factor.value}px, 0px)`
 }))
 
 function runAutoParallax() {
@@ -49,14 +52,23 @@ function runAutoParallax() {
   rafId = requestAnimationFrame(frame)
 }
 
+watch(
+  () => props.replayTick,
+  () => {
+    runAutoParallax()
+  }
+)
+
 onUnmounted(() => {
   cancelAuto()
 })
 </script>
 
 <template>
-  <div class="motion-parallax">
-    <span class="stage-badge">拖动滑块模拟滚动</span>
+  <div class="motion-parallax" :class="{ 'is-mobile': props.viewport === 'mobile' }">
+    <span class="stage-badge">{{
+      props.viewport === 'mobile' ? '📱 手机端自动减弱视差幅度' : '拖动滑块模拟滚动'
+    }}</span>
     <button type="button" class="stage-action" @click.stop="runAutoParallax">▶ 自动演示</button>
     <div class="demo-parallax-box">
       <div class="px-bg-orb" :style="orbStyle"></div>
@@ -90,8 +102,9 @@ onUnmounted(() => {
 
 .demo-parallax-box {
   width: 100%;
-  height: 128px;
-  border-radius: 10px;
+  max-width: 430px;
+  height: 136px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
   position: relative;
   overflow: hidden;
@@ -102,8 +115,8 @@ onUnmounted(() => {
 
 .px-bg-orb {
   position: absolute;
-  width: 110px;
-  height: 110px;
+  width: 118px;
+  height: 118px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(96, 165, 250, 0.55), transparent 70%);
   left: 16%;
@@ -114,13 +127,13 @@ onUnmounted(() => {
 .px-mid-tag {
   position: absolute;
   right: 16px;
-  top: 16px;
+  top: 14px;
   background: rgba(255, 255, 255, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.28);
   backdrop-filter: blur(4px);
   color: #e0f2fe;
-  font-size: 10.5px;
-  padding: 3px 8px;
+  font-size: 11px;
+  padding: 3px 9px;
   border-radius: 999px;
   transition: transform calc(var(--dur, 0.28s) * 0.55) ease-out;
 }
@@ -130,9 +143,9 @@ onUnmounted(() => {
   z-index: 2;
   background: rgba(255, 255, 255, 0.96);
   color: var(--text);
-  padding: 10px 16px;
+  padding: 11px 18px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   transition: transform calc(var(--dur, 0.28s) * 0.55) ease-out;
@@ -140,12 +153,34 @@ onUnmounted(() => {
 
 .px-slider {
   position: absolute;
-  bottom: 8px;
+  bottom: 9px;
   left: 50%;
   transform: translateX(-50%);
-  width: 140px;
+  width: 156px;
   z-index: 5;
   accent-color: #60a5fa;
   cursor: pointer;
+}
+
+.motion-parallax.is-mobile .demo-parallax-box {
+  max-width: 100%;
+  height: 122px;
+}
+
+.motion-parallax.is-mobile .px-mid-tag {
+  right: 10px;
+  top: 10px;
+  font-size: 10px;
+  padding: 2px 7px;
+}
+
+.motion-parallax.is-mobile .px-front-card {
+  padding: 8px 12px;
+  font-size: 11.5px;
+}
+
+.motion-parallax.is-mobile .px-slider {
+  width: 128px;
+  bottom: 7px;
 }
 </style>

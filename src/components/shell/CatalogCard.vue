@@ -1,5 +1,7 @@
 <script setup>
+import { ref, computed, watch } from 'vue'
 import { DEMO_COMPONENTS } from '../demos/index.js'
+import { useCatalogStore } from '../../composables/useCatalogStore.js'
 
 defineProps({
   item: { type: Object, required: true },
@@ -8,30 +10,67 @@ defineProps({
 })
 
 const emit = defineEmits(['toggle', 'copy'])
+
+const { cardViewport, cardViewportVersion } = useCatalogStore()
+
+const localViewport = ref(null)
+watch(cardViewportVersion, () => {
+  localViewport.value = null
+})
+
+const effectiveViewport = computed(() => localViewport.value || cardViewport.value)
+
+function setLocalViewport(vp) {
+  localViewport.value = vp
+}
 </script>
 
 <template>
   <article class="card" :class="{ selected }">
     <div class="card-head">
       <div class="card-title-wrap">
-        <div class="card-name">
-          <span
-            v-if="item.code"
-            class="card-code"
-            :class="'kind-' + item.kind"
-          >{{ item.code }}</span>
-          <span>{{ item.name }}</span>
-        </div>
+        <span
+          v-if="item.code"
+          class="card-code"
+          :class="'kind-' + item.kind"
+        >{{ item.code }}</span>
+        <span class="card-name-text">{{ item.name }}</span>
         <span class="card-en">{{ item.en }}</span>
       </div>
 
-      <button
-        type="button"
-        class="pick-btn"
-        @click="emit('toggle', item.id)"
-      >
-        {{ selected ? '✓ 已选中' : '+ 加入组合' }}
-      </button>
+      <div class="card-head-actions">
+        <div
+          v-if="item.kind !== 'pitfall'"
+          class="vp-mini-switch"
+          role="group"
+          aria-label="单卡视图端切换"
+        >
+          <button
+            type="button"
+            class="vp-mini-btn"
+            :class="{ active: effectiveViewport === 'desktop' }"
+            @click="setLocalViewport('desktop')"
+          >
+            Web
+          </button>
+          <button
+            type="button"
+            class="vp-mini-btn"
+            :class="{ active: effectiveViewport === 'mobile' }"
+            @click="setLocalViewport('mobile')"
+          >
+            手机
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="pick-btn"
+          @click="emit('toggle', item.id)"
+        >
+          {{ selected ? '✓ 已选中' : '+ 加入组合' }}
+        </button>
+      </div>
     </div>
 
     <div
@@ -44,30 +83,30 @@ const emit = defineEmits(['toggle', 'copy'])
       <span v-if="item.kind === 'style' && item.badge" class="stage-badge">
         {{ item.badge }}
       </span>
-      <component
-        :is="DEMO_COMPONENTS[item.demoKey]"
-        :replay-tick="replayTick"
-        viewport="desktop"
-      />
+      <div
+        class="stage-inner"
+        :class="{ 'is-mobile-frame': effectiveViewport === 'mobile' && item.kind !== 'pitfall' }"
+      >
+        <div
+          v-if="effectiveViewport === 'mobile' && item.kind !== 'pitfall'"
+          class="mini-phone-bar"
+        ></div>
+        <component
+          :is="DEMO_COMPONENTS[item.demoKey]"
+          :replay-tick="replayTick"
+          :viewport="effectiveViewport"
+        />
+      </div>
     </div>
 
     <div class="card-body">
       <div class="meta-row">
-        <strong>适合用在哪：</strong>{{ item.scene }}
-      </div>
-
-      <div
-        v-if="item.mobileTip"
-        class="mobile-tip"
-      >
-        📱 手机端：{{ item.mobileTip }}
+        <span class="meta-label">场景</span>
+        <span class="meta-val">{{ item.scene }}</span>
       </div>
 
       <div class="prompt-box">
-        <div class="prompt-text">
-          <span class="prompt-label">提需求可以这样说</span>
-          「{{ item.shortPrompt || item.prompt }}」
-        </div>
+        <span class="prompt-text">「{{ item.shortPrompt || item.prompt }}」</span>
         <button
           type="button"
           class="copy-btn"
@@ -103,33 +142,29 @@ const emit = defineEmits(['toggle', 'copy'])
 }
 
 .card-head {
-  padding: 16px 18px 12px;
+  padding: 15px 18px 11px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
 .card-title-wrap {
   min-width: 0;
-}
-
-.card-name {
-  font-size: 15.5px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.35;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .card-code {
   display: inline-block;
-  margin-right: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 11px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 5px;
-  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .card-code.kind-style {
@@ -150,15 +185,59 @@ const emit = defineEmits(['toggle', 'copy'])
   border: 1px solid #fecaca;
 }
 
+.card-name-text {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
 .card-en {
-  display: inline-block;
-  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.card-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.vp-mini-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.vp-mini-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.16s ease;
+}
+
+.vp-mini-btn:hover {
+  color: var(--text);
+}
+
+.vp-mini-btn.active {
+  background: var(--surface);
   color: var(--primary);
-  background: var(--primary-soft);
-  padding: 1px 7px;
-  border-radius: 5px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 .pick-btn {
@@ -171,7 +250,7 @@ const emit = defineEmits(['toggle', 'copy'])
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
-  padding: 5px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -191,8 +270,8 @@ const emit = defineEmits(['toggle', 'copy'])
 .stage {
   position: relative;
   margin: 0 18px;
-  min-height: 184px;
-  padding: 36px 14px 14px;
+  min-height: 256px;
+  padding: 44px 22px 20px;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
   border: 1px solid #e2e8f0;
@@ -210,32 +289,65 @@ const emit = defineEmits(['toggle', 'copy'])
   background: linear-gradient(135deg, #f8fafc 0%, #fff7ed 100%);
 }
 
-.card-body {
-  padding: 14px 18px 16px;
+/* Keep static and transform-free so child .stage-badge / .stage-action stay anchored to .stage */
+.stage-inner {
+  position: static;
+  width: 100%;
+  max-width: 500px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage-inner.is-mobile-frame {
+  width: 100%;
+  max-width: 316px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 3px solid #334155;
+  border-radius: 20px;
+  padding: 8px 10px 12px;
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.16);
+}
+
+.mini-phone-bar {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  margin: 0 auto 8px;
+  flex-shrink: 0;
+}
+
+.card-body {
+  padding: 12px 18px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
 }
 
 .meta-row {
-  font-size: 13px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: var(--text-secondary);
 }
 
-.meta-row strong {
-  color: var(--text);
+.meta-label {
+  flex-shrink: 0;
+  font-size: 11px;
   font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
-.mobile-tip {
-  font-size: 12px;
-  color: var(--text-muted);
-  background: #f8fafc;
-  border-left: 2px solid #93c5fd;
-  padding: 4px 8px;
-  border-radius: 0 6px 6px 0;
-  line-height: 1.45;
+.meta-val {
+  min-width: 0;
 }
 
 .prompt-box {
@@ -243,7 +355,7 @@ const emit = defineEmits(['toggle', 'copy'])
   background: var(--surface-soft);
   border: 1px dashed var(--border-strong);
   border-radius: 10px;
-  padding: 9px 11px;
+  padding: 7px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -254,13 +366,7 @@ const emit = defineEmits(['toggle', 'copy'])
   font-size: 12.5px;
   color: var(--text);
   line-height: 1.45;
-}
-
-.prompt-label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 2px;
+  min-width: 0;
 }
 
 .copy-btn {
@@ -270,8 +376,8 @@ const emit = defineEmits(['toggle', 'copy'])
   border: 1px solid #bfdbfe;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 5px 10px;
+  border-radius: 7px;
   cursor: pointer;
   transition: all 0.18s ease;
 }

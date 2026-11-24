@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const words = ['WhatsApp', 'Messenger', 'Instagram', 'LINE']
@@ -120,7 +121,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="motion-text-rotate">
+  <div class="motion-text-rotate" :class="{ 'is-mobile': props.viewport === 'mobile' }">
     <span class="stage-badge">{{ mode === 'rotate' ? '当前：上下轮换' : '当前：打字机' }}</span>
     <button type="button" class="stage-action" @click.stop="toggleMode">
       {{ mode === 'rotate' ? '切到打字机' : '切到上下轮换' }}
@@ -149,17 +150,19 @@ onUnmounted(() => {
 }
 
 .demo-text-stage {
+  width: 100%;
+  max-width: 420px;
   text-align: center;
 }
 
 .demo-text-line {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
 }
 
@@ -167,13 +170,13 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 108px;
-  height: 30px;
-  padding: 0 10px;
+  min-width: 114px;
+  height: 32px;
+  padding: 0 11px;
   border-radius: 8px;
   background: var(--primary);
   color: #ffffff;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   overflow: hidden;
   position: relative;
@@ -207,9 +210,32 @@ onUnmounted(() => {
 }
 
 .demo-text-sub {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 10px;
+}
+
+.motion-text-rotate.is-mobile .demo-text-stage {
+  max-width: 100%;
+}
+
+.motion-text-rotate.is-mobile .demo-text-line {
+  font-size: 14px;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.motion-text-rotate.is-mobile .rotate-slot {
+  min-width: 96px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+.motion-text-rotate.is-mobile .demo-text-sub {
+  font-size: 11px;
+  margin-top: 8px;
 }
 
 @keyframes cursorBlink {

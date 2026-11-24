@@ -33,7 +33,7 @@ function toggleFaq(idx) {
         :class="{ open: openIndex === idx }"
       >
         <button type="button" class="faq-q" @click.stop="toggleFaq(idx)">
-          <span>{{ item.q }}</span>
+          <span class="faq-q-txt">{{ item.q }}</span>
           <i>{{ openIndex === idx ? '−' : '+' }}</i>
         </button>
         <div v-if="openIndex === idx" class="faq-a">{{ item.a }}</div>
@@ -46,68 +46,145 @@ function toggleFaq(idx) {
 .layout-s14 {
   width: 100%;
   display: grid;
-  grid-template-columns: 0.9fr 1.45fr;
-  gap: 8px;
+  grid-template-columns: 0.95fr 1.45fr;
+  gap: 10px;
   align-items: start;
 }
 
 .faq-left {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 9px;
+  border-radius: 11px;
+  padding: 13px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.faq-title { font-size: 10.5px; font-weight: 800; color: var(--text); }
-.faq-sub { font-size: 8.5px; color: var(--text-muted); line-height: 1.35; }
+.faq-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.faq-sub {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 .faq-cta {
   align-self: flex-start;
   margin-top: 2px;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-soft);
-  padding: 2px 7px;
+  padding: 3px 9px;
   border-radius: 999px;
 }
 
-.faq-right { display: flex; flex-direction: column; gap: 5px; }
+.faq-right {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
 
 .faq-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 9px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 
-.faq-item.open { border-color: #93c5fd; }
+.faq-item.open {
+  border-color: #93c5fd;
+}
 
 .faq-q {
   width: 100%;
   border: none;
   background: transparent;
-  padding: 6px 8px;
+  padding: 9px 11px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  font-size: 9px;
+  gap: 8px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--text);
   text-align: left;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
-.faq-q i { font-style: normal; color: var(--primary); font-weight: 800; flex-shrink: 0; }
-.faq-a { padding: 0 8px 7px; font-size: 8.5px; color: var(--text-secondary); line-height: 1.4; }
+.faq-q-txt {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.faq-q i {
+  font-style: normal;
+  color: var(--primary);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.faq-a {
+  padding: 0 11px 9px;
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.layout-s14.is-compact {
+  gap: 8px;
+}
+
+.layout-s14.is-compact .faq-left {
+  padding: 9px;
+}
+
+.layout-s14.is-compact .faq-title {
+  font-size: 10.5px;
+}
+
+.layout-s14.is-compact .faq-q {
+  padding: 6px 8px;
+  font-size: 9px;
+}
+
+.layout-s14.is-compact .faq-a {
+  padding: 0 8px 7px;
+  font-size: 8.5px;
+}
 
 .layout-s14.is-mobile {
   grid-template-columns: 1fr;
-  gap: 6px;
+  gap: 7px;
+}
+
+.layout-s14.is-mobile .faq-left {
+  padding: 10px 11px;
+  gap: 4px;
+}
+
+.layout-s14.is-mobile .faq-title {
+  font-size: 11px;
+}
+
+.layout-s14.is-mobile .faq-q {
+  padding: 7px 9px;
+  font-size: 9.5px;
+}
+
+.layout-s14.is-mobile .faq-a {
+  padding: 0 9px 8px;
+  font-size: 9px;
 }
 </style>

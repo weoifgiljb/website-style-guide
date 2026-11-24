@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const activeIdx = ref(0)
@@ -31,7 +32,7 @@ function selectTab(idx) {
 </script>
 
 <template>
-  <div class="motion-tab-slide">
+  <div class="motion-tab-slide" :class="{ 'is-mobile': props.viewport === 'mobile' }">
     <span class="stage-badge">点击切换 Tab</span>
     <div class="demo-tabs-wrap">
       <div class="demo-tab-bar">
@@ -53,7 +54,7 @@ function selectTab(idx) {
       <Transition name="tab-fade" mode="out-in">
         <div :key="activeIdx" class="demo-tab-content">
           <div class="tab-dot-icon">{{ tabs[activeIdx].icon }}</div>
-          <div>{{ tabs[activeIdx].text }}</div>
+          <div class="tab-copy">{{ tabs[activeIdx].text }}</div>
         </div>
       </Transition>
     </div>
@@ -71,7 +72,7 @@ function selectTab(idx) {
 
 .demo-tabs-wrap {
   width: 100%;
-  max-width: 290px;
+  max-width: 420px;
 }
 
 .demo-tab-bar {
@@ -101,12 +102,13 @@ function selectTab(idx) {
   z-index: 2;
   border: none;
   background: transparent;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-secondary);
-  padding: 5px 4px;
+  padding: 6px 6px;
   cursor: pointer;
   transition: color 0.2s ease;
+  min-width: 0;
 }
 
 .demo-tab-btn.active {
@@ -117,26 +119,58 @@ function selectTab(idx) {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 12px;
+  padding: 14px 16px;
+  font-size: 12.5px;
   color: var(--text-secondary);
-  min-height: 62px;
+  min-height: 66px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
 .tab-dot-icon {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   background: var(--primary-soft);
   color: var(--primary);
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 13.5px;
   flex-shrink: 0;
+}
+
+.tab-copy {
+  min-width: 0;
+  line-height: 1.45;
+}
+
+.motion-tab-slide.is-mobile .demo-tabs-wrap {
+  max-width: 100%;
+}
+
+.motion-tab-slide.is-mobile .demo-tab-bar {
+  margin-bottom: 8px;
+}
+
+.motion-tab-slide.is-mobile .demo-tab-btn {
+  font-size: 11.5px;
+  padding: 5px 3px;
+}
+
+.motion-tab-slide.is-mobile .demo-tab-content {
+  padding: 10px 11px;
+  font-size: 11.5px;
+  min-height: 56px;
+  gap: 8px;
+}
+
+.motion-tab-slide.is-mobile .tab-dot-icon {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
 }
 
 .tab-fade-enter-active,

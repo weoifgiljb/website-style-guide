@@ -6,12 +6,14 @@ import {
   MOTION_ITEMS,
   ITEMS_BY_ID
 } from '../../data/index.js'
-import { LAYOUT_DEMO_MAP } from '../demos/index.js'
+import { DEMO_COMPONENTS } from '../demos/index.js'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
+import BlueprintFloorPreview from './BlueprintFloorPreview.vue'
 
 const {
   floorOrder,
   floorMotionMap,
+  selectedItems,
   pageTarget,
   isDrawerOpen,
   previewViewport,
@@ -27,8 +29,26 @@ const {
   copyText
 } = useCatalogStore()
 
+const previewReplayKey = ref(0)
+const canvasScrollRatio = ref(0)
+
 const unselectedLayouts = computed(() =>
   LAYOUT_ITEMS.filter((item) => !floorOrder.value.includes(item.id))
+)
+
+const boundMotionIds = computed(() => {
+  const ids = new Set()
+  floorOrder.value.forEach((layoutId) => {
+    const motionId = floorMotionMap[layoutId]
+    if (motionId) ids.add(motionId)
+  })
+  return ids
+})
+
+const unboundSelectedMotions = computed(() =>
+  (selectedItems.value || []).filter(
+    (item) => item.kind === 'motion' && !boundMotionIds.value.has(item.id)
+  )
 )
 
 const previewUrl = computed(() => {
@@ -69,10 +89,30 @@ function handleAddFloorSelect(event) {
   }
 }
 
+function handleApplyPreset(presetId) {
+  applyPreset(presetId)
+  previewReplayKey.value += 1
+}
+
+function handleCanvasScroll(event) {
+  const el = event.currentTarget
+  if (!el) return
+  const maxScroll = Math.max(1, el.scrollHeight - el.clientHeight)
+  canvasScrollRatio.value = Math.min(1, Math.max(0, el.scrollTop / maxScroll))
+}
+
+watch(previewViewport, () => {
+  previewReplayKey.value += 1
+})
+
 watch(
   isDrawerOpen,
   (open) => {
     lockBodyScroll(open)
+    if (open) {
+      canvasScrollRatio.value = 0
+      previewReplayKey.value += 1
+    }
   },
   { immediate: true }
 )
@@ -115,7 +155,7 @@ onUnmounted(() => {
               :key="preset.id"
               type="button"
               class="preset-mini-btn"
-              @click="applyPreset(preset.id)"
+              @click="handleApplyPreset(preset.id)"
             >
               {{ preset.name }}
             </button>
@@ -165,7 +205,7 @@ onUnmounted(() => {
                 <button
                   type="button"
                   class="mini-action-btn primary"
-                  @click="applyPreset('standard-feature')"
+                  @click="handleApplyPreset('standard-feature')"
                 >
                   套用标准 5 屏模板
                 </button>
@@ -311,12 +351,21 @@ onUnmounted(() => {
               </button>
             </div>
 
-            <span class="canvas-summary">
-              共 {{ floorOrder.length }} 屏 · 实时响应式骨架
-            </span>
+            <div class="canvas-toolbar-right">
+              <button
+                type="button"
+                class="replay-all-btn"
+                @click="previewReplayKey++"
+              >
+                ↻ 重播整页动效
+              </button>
+              <span class="canvas-summary">
+                共 {{ floorOrder.length }} 屏<template v-if="unboundSelectedMotions.length > 0"> · {{ unboundSelectedMotions.length }} 项独立动效</template> · 实时响应式骨架
+              </span>
+            </div>
           </div>
 
-          <div class="canvas-stage">
+          <div class="canvas-stage" @scroll="handleCanvasScroll">
             <div
               class="device-frame"
               :class="previewViewport === 'mobile' ? 'is-phone' : 'is-browser'"
@@ -349,35 +398,61 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <!-- Stacked Floors -->
+              <!-- Stacked Floors & Standalone Motions -->
               <div class="mock-page-body">
-                <div v-if="floorOrder.length === 0" class="canvas-empty">
+                <div
+                  v-if="floorOrder.length === 0 && unboundSelectedMotions.length === 0"
+                  class="canvas-empty"
+                >
                   请在左侧选择预设模板或添加版式楼层，这里会实时拼出整页骨架。
                 </div>
 
-                <div
-                  v-for="(layoutId, idx) in floorOrder"
-                  :key="layoutId"
-                  class="blueprint-floor"
-                >
-                  <div class="floor-strip">
-                    <span class="strip-title">
-                      F{{ idx + 1 }} · {{ ITEMS_BY_ID[layoutId]?.code }} {{ ITEMS_BY_ID[layoutId]?.name }}
-                    </span>
-                    <span
-                      v-if="floorMotionMap[layoutId] && ITEMS_BY_ID[floorMotionMap[layoutId]]"
-                      class="strip-motion-pill"
-                    >
-                      ✨ {{ ITEMS_BY_ID[floorMotionMap[layoutId]].name }}
-                    </span>
-                  </div>
+                <template v-for="(layoutId, idx) in floorOrder" :key="layoutId">
+                  <BlueprintFloorPreview
+                    v-if="ITEMS_BY_ID[layoutId]"
+                    :floor-index="idx"
+                    :layout-item="ITEMS_BY_ID[layoutId]"
+                    :motion-item="
+                      floorMotionMap[layoutId] && ITEMS_BY_ID[floorMotionMap[layoutId]]
+                        ? ITEMS_BY_ID[floorMotionMap[layoutId]]
+                        : null
+                    "
+                    :viewport="previewViewport"
+                    :replay-key="previewReplayKey"
+                    :scroll-ratio="canvasScrollRatio"
+                  />
+                </template>
 
-                  <div class="floor-demo-wrap">
-                    <component
-                      :is="LAYOUT_DEMO_MAP[ITEMS_BY_ID[layoutId]?.demoKey]"
-                      v-if="ITEMS_BY_ID[layoutId] && LAYOUT_DEMO_MAP[ITEMS_BY_ID[layoutId].demoKey]"
-                      :viewport="previewViewport"
-                    />
+                <div
+                  v-if="unboundSelectedMotions.length > 0"
+                  class="standalone-motions-section"
+                >
+                  <div class="standalone-motions-head">
+                    ✨ 已选独立动效实时预览（可在左侧绑定到具体楼层）
+                  </div>
+                  <div
+                    class="standalone-motions-grid"
+                    :class="{ 'is-mobile': previewViewport === 'mobile' }"
+                  >
+                    <div
+                      v-for="m in unboundSelectedMotions"
+                      :key="m.id"
+                      class="standalone-motion-card"
+                    >
+                      <div class="standalone-motion-meta">
+                        <span class="standalone-motion-code">{{ m.code }}</span>
+                        <span class="standalone-motion-name">{{ m.name }}</span>
+                        <span class="standalone-motion-en">{{ m.en }}</span>
+                      </div>
+                      <div class="stage">
+                        <component
+                          :is="DEMO_COMPONENTS[m.demoKey]"
+                          v-if="DEMO_COMPONENTS[m.demoKey]"
+                          :viewport="previewViewport"
+                          :replay-tick="previewReplayKey"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -775,6 +850,31 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm);
 }
 
+.canvas-toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.replay-all-btn {
+  border: 1px solid #bfdbfe;
+  background: #ffffff;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.replay-all-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
 .canvas-summary {
   font-size: 12px;
   color: var(--text-muted);
@@ -917,40 +1017,83 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-.blueprint-floor {
+.standalone-motions-section {
   background: #ffffff;
+  border: 1px dashed #93c5fd;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.standalone-motions-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.standalone-motions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.standalone-motions-grid.is-mobile {
+  grid-template-columns: 1fr;
+}
+
+.standalone-motion-card {
+  background: var(--surface-soft);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px;
+  padding: 9px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.floor-strip {
+.standalone-motion-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
-  padding-bottom: 6px;
-  border-bottom: 1px dashed var(--border);
 }
 
-.strip-title {
-  font-size: 11.5px;
+.standalone-motion-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.strip-motion-pill {
-  font-size: 11px;
-  font-weight: 600;
   color: var(--primary);
   background: var(--primary-soft);
   border: 1px solid #bfdbfe;
-  padding: 1px 8px;
-  border-radius: 999px;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.standalone-motion-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.standalone-motion-en {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.standalone-motion-card .stage {
+  position: relative;
+  min-height: 178px;
+  padding: 36px 12px 12px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mock-footer {

@@ -245,6 +245,22 @@ test('useCatalogStore manages selection, floor ordering, motion bindings, preset
   store.closeDrawer()
   assert.equal(store.isDrawerOpen.value, false)
 
+  // Global card viewport state & version tracking
+  assert.equal(typeof store.setCardViewport, 'function')
+  store.setCardViewport('desktop')
+  assert.equal(store.cardViewport.value, 'desktop')
+  const prevVpVersion = store.cardViewportVersion.value
+  const prevReplayBeforeVp = store.replayTick.value
+
+  store.setCardViewport('mobile')
+  assert.equal(store.cardViewport.value, 'mobile')
+  assert.equal(store.cardViewportVersion.value, prevVpVersion + 1)
+  assert.equal(store.replayTick.value, prevReplayBeforeVp + 1)
+
+  store.setCardViewport('invalid-value')
+  assert.equal(store.cardViewport.value, 'desktop')
+  assert.equal(store.cardViewportVersion.value, prevVpVersion + 2)
+
   store.clearSelection()
   assert.equal(store.selectedIds.value.length, 0)
   assert.equal(store.floorOrder.value.length, 0)

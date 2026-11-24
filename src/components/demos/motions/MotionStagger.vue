@@ -2,7 +2,8 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps({
-  replayTick: { type: Number, default: 0 }
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const animKey = ref(0)
@@ -26,7 +27,7 @@ watch(
 </script>
 
 <template>
-  <div class="motion-stagger">
+  <div class="motion-stagger" :class="{ 'is-mobile': props.viewport === 'mobile' }">
     <span class="stage-badge">错峰节奏</span>
     <button type="button" class="stage-action" @click.stop="replay">↻ 重播</button>
     <div :key="animKey" class="demo-stagger-grid">
@@ -55,37 +56,68 @@ watch(
 .demo-stagger-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 12px;
   width: 100%;
+  max-width: 420px;
 }
 
 .stagger-item {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 8px;
+  border-radius: 12px;
+  padding: 14px 10px;
   text-align: center;
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  box-sizing: border-box;
   animation: staggerUp var(--dur, 0.28s) var(--ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .si-ico {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  margin: 0 auto 6px;
+  margin: 0 auto 8px;
   display: grid;
   place-items: center;
-  font-size: 13px;
+  font-size: 14px;
   background: var(--primary-soft);
   color: var(--primary);
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .si-t {
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
+}
+
+.motion-stagger.is-mobile .demo-stagger-grid {
+  grid-template-columns: 1fr;
+  gap: 7px;
+  max-width: 100%;
+}
+
+.motion-stagger.is-mobile .stagger-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.motion-stagger.is-mobile .si-ico {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.motion-stagger.is-mobile .si-t {
+  font-size: 12px;
 }
 
 @keyframes staggerUp {

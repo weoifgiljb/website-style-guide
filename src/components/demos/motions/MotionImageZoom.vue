@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const isDemo = ref(false)
@@ -24,16 +25,25 @@ function triggerDemo() {
   }, 950)
 }
 
+watch(
+  () => props.replayTick,
+  () => {
+    triggerDemo()
+  }
+)
+
 onUnmounted(() => {
   clearDemoTimer()
 })
 </script>
 
 <template>
-  <div class="motion-image-zoom">
-    <span class="stage-badge">鼠标移到图卡上</span>
+  <div class="motion-image-zoom" :class="{ 'is-mobile': props.viewport === 'mobile' }">
+    <span class="stage-badge">{{
+      props.viewport === 'mobile' ? '点击模拟封面轻缩放' : '鼠标移到图卡上'
+    }}</span>
     <button type="button" class="stage-action" @click.stop="triggerDemo">模拟一次</button>
-    <div class="demo-img-card" :class="{ 'is-demo': isDemo }" @click.stop>
+    <div class="demo-img-card" :class="{ 'is-demo': isDemo }" @click.stop="triggerDemo">
       <div class="demo-img-box">
         <div class="demo-img-art">
           <div class="mock-ui-win">
@@ -61,17 +71,19 @@ onUnmounted(() => {
 }
 
 .demo-img-card {
-  width: 220px;
+  width: 100%;
+  max-width: 340px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
 .demo-img-box {
-  height: 90px;
+  height: 88px;
   overflow: hidden;
   background: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 50%, #e0f2fe 100%);
   position: relative;
@@ -92,15 +104,17 @@ onUnmounted(() => {
 }
 
 .mock-ui-win {
-  width: 136px;
+  width: 164px;
   height: 62px;
   background: #ffffff;
   border-radius: 8px;
-  padding: 8px;
+  padding: 8px 10px;
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.14);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 5px;
+  box-sizing: border-box;
 }
 
 .mock-bar {
@@ -124,17 +138,43 @@ onUnmounted(() => {
 }
 
 .demo-img-caption {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 9px 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .caption-link {
   color: var(--primary);
-  font-size: 11px;
+  font-size: 11.5px;
+  flex-shrink: 0;
+}
+
+.motion-image-zoom.is-mobile .demo-img-card {
+  max-width: 100%;
+}
+
+.motion-image-zoom.is-mobile .demo-img-box {
+  height: 68px;
+}
+
+.motion-image-zoom.is-mobile .mock-ui-win {
+  width: 128px;
+  height: 48px;
+  padding: 6px 8px;
+  gap: 4px;
+}
+
+.motion-image-zoom.is-mobile .mock-bar {
+  height: 6px;
+}
+
+.motion-image-zoom.is-mobile .demo-img-caption {
+  padding: 7px 10px;
+  font-size: 11.5px;
 }
 </style>

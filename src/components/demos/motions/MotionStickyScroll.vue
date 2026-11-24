@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 
-defineProps({
-  replayTick: { type: Number, default: 0 }
+const props = defineProps({
+  replayTick: { type: Number, default: 0 },
+  viewport: { type: String, default: 'desktop' }
 })
 
 const steps = [
@@ -56,7 +57,7 @@ function selectStep(idx) {
   clearAutoTimer()
   clearProgrammaticGuard()
   activeStep.value = idx
-  if (leftRef.value) {
+  if (leftRef.value && props.viewport !== 'mobile') {
     isProgrammaticScroll = true
     const max = Math.max(0, leftRef.value.scrollHeight - leftRef.value.clientHeight)
     leftRef.value.scrollTop = Math.round((idx / (steps.length - 1)) * max)
@@ -68,7 +69,7 @@ function selectStep(idx) {
 }
 
 function onLeftScroll(e) {
-  if (autoTimer !== null || isProgrammaticScroll) return
+  if (props.viewport === 'mobile' || autoTimer !== null || isProgrammaticScroll) return
   const el = e.currentTarget
   if (!el) return
   const max = el.scrollHeight - el.clientHeight
@@ -92,12 +93,19 @@ function runAutoDemo() {
       return
     }
     activeStep.value = step
-    if (leftRef.value) {
+    if (leftRef.value && props.viewport !== 'mobile') {
       const max = Math.max(0, leftRef.value.scrollHeight - leftRef.value.clientHeight)
       leftRef.value.scrollTop = Math.round((step / 2) * max)
     }
   }, 750)
 }
+
+watch(
+  () => props.replayTick,
+  () => {
+    runAutoDemo()
+  }
+)
 
 onUnmounted(() => {
   clearAutoTimer()
@@ -106,8 +114,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="motion-sticky-scroll">
-    <span class="stage-badge">滚左侧或点步骤</span>
+  <div class="motion-sticky-scroll" :class="{ 'is-mobile': props.viewport === 'mobile' }">
+    <span class="stage-badge">{{
+      props.viewport === 'mobile' ? '📱 手机端自动改为纵向切换' : '滚左侧或点步骤'
+    }}</span>
     <button type="button" class="stage-action" @click.stop="runAutoDemo">▶ 自动演示</button>
     <div class="demo-sticky-box">
       <div
@@ -148,31 +158,34 @@ onUnmounted(() => {
 
 .demo-sticky-box {
   width: 100%;
-  height: 128px;
+  max-width: 440px;
+  height: 136px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.08fr;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .sticky-left {
   overflow-y: auto;
-  padding: 8px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   border-right: 1px solid var(--border);
   scroll-behavior: smooth;
+  min-width: 0;
 }
 
 .sticky-step {
-  padding: 14px 8px;
+  padding: 14px 10px;
   border-radius: 8px;
   background: var(--surface-soft);
   border: 1px solid transparent;
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--dur, 0.28s) ease;
@@ -191,29 +204,65 @@ onUnmounted(() => {
   justify-content: center;
   padding: 10px;
   background: #f8fafc;
+  min-width: 0;
 }
 
 .sticky-screen {
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
+  box-sizing: border-box;
   animation: screenSwap var(--dur, 0.28s) var(--ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .sticky-sub {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 400;
   opacity: 0.92;
-  margin-top: 3px;
+  margin-top: 4px;
+}
+
+.motion-sticky-scroll.is-mobile .demo-sticky-box {
+  max-width: 100%;
+  grid-template-columns: 1fr;
+  height: auto;
+}
+
+.motion-sticky-scroll.is-mobile .sticky-left {
+  overflow-y: visible;
+  border-right: none;
+  border-bottom: 1px solid var(--border);
+  padding: 7px;
+  gap: 5px;
+}
+
+.motion-sticky-scroll.is-mobile .sticky-step {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.motion-sticky-scroll.is-mobile .sticky-right {
+  padding: 8px;
+}
+
+.motion-sticky-scroll.is-mobile .sticky-screen {
+  min-height: 76px;
+  height: auto;
+  font-size: 12px;
+  padding: 10px;
+}
+
+.motion-sticky-scroll.is-mobile .sticky-sub {
+  font-size: 10.5px;
 }
 
 @keyframes screenSwap {
