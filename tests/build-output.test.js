@@ -142,15 +142,31 @@ test('shell components enforce key UI contracts (stage-badge deduplication, pres
     /item\.kind\s*===\s*['"]style['"][\s\S]*stage-badge/,
     'CatalogCard must conditionally render .stage-badge only when item.kind === "style"'
   )
+  assert.match(
+    card,
+    /v-if=["']item\.mobileTip["']/,
+    'CatalogCard must render .mobile-tip for all cards with item.mobileTip'
+  )
+  assert.doesNotMatch(
+    card,
+    /item\.kind\s*===\s*['"]style['"]\s*&&\s*item\.mobileTip/,
+    'CatalogCard must not gate .mobile-tip behind item.kind === "style"'
+  )
   assert.match(card, /DEMO_COMPONENTS/, 'CatalogCard must dynamically render DEMO_COMPONENTS[item.demoKey]')
 
   const combo = fs.readFileSync(path.join(SHELL_DIR, 'ComboFloatingBar.vue'), 'utf8')
   assert.match(combo, /selectedMotionCount\s*>\s*3/, 'ComboFloatingBar must warn when selectedMotionCount > 3')
+  assert.match(combo, /:inert=["']selectedIds\.length\s*===\s*0["']/, 'ComboFloatingBar must bind :inert when hidden')
+  assert.match(combo, /visibility:\s*hidden/, 'ComboFloatingBar must hide visibility when collapsed')
+  assert.match(combo, /visibility:\s*visible/, 'ComboFloatingBar must restore visibility when shown')
   assert.match(combo, /一键复制给 Codex 话术/, 'ComboFloatingBar must render primary copy button')
 
   const drawer = fs.readFileSync(path.join(SHELL_DIR, 'PageBlueprintDrawer.vue'), 'utf8')
   assert.match(drawer, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'PageBlueprintDrawer must render exact title')
   assert.match(drawer, /LAYOUT_DEMO_MAP/, 'PageBlueprintDrawer must render live floors with LAYOUT_DEMO_MAP')
+  assert.match(drawer, /width:\s*402px/, 'PageBlueprintDrawer phone frame must be 402px (390px inner + 12px bezel)')
+  assert.match(drawer, /:for=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind label :for on floor motion select')
+  assert.match(drawer, /:id=["']'floor-motion-'\s*\+\s*layoutId["']/, 'PageBlueprintDrawer must bind :id on floor motion select')
   assert.match(drawer, /Escape/, 'PageBlueprintDrawer must support Escape key to close')
   assert.match(drawer, /onUnmounted/, 'PageBlueprintDrawer must clean up listeners & body scroll lock onUnmounted')
 })

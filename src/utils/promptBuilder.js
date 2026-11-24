@@ -14,7 +14,7 @@ export function filterCatalogItems({ items = [], activeCategory = 'all', searchQ
     if (!catMatch) return false
     if (!query) return true
 
-    const haystack = [item.code, item.name, item.en, item.keywords, item.scene]
+    const haystack = [item.code, item.name, item.en, item.keywords, item.scene, item.mobileTip]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()

@@ -1,7 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   replayTick: { type: Number, default: 0 }
 })
 
@@ -10,13 +10,6 @@ const mode = ref('good')
 function toggleMode() {
   mode.value = mode.value === 'good' ? 'bad' : 'good'
 }
-
-watch(
-  () => props.replayTick,
-  () => {
-    toggleMode()
-  }
-)
 </script>
 
 <template>
@@ -35,7 +28,9 @@ watch(
         <span v-if="mode === 'good'" class="inline-pill">💬 7×24 实时响应</span>
 
         <div class="phone-headline">全渠道客户消息聚合</div>
-        <div class="phone-sub">标题与按钮 100% 清晰无遮挡</div>
+        <div class="phone-sub">
+          {{ mode === 'good' ? '标题与按钮 100% 清晰无遮挡' : '❌ 悬浮气泡压住主标题与行动按钮' }}
+        </div>
 
         <button type="button" class="phone-cta" @click.stop="toggleMode">
           立即免费试用

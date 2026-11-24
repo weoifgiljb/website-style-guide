@@ -57,7 +57,7 @@ const emit = defineEmits(['toggle', 'copy'])
       </div>
 
       <div
-        v-if="item.kind === 'style' && item.mobileTip"
+        v-if="item.mobileTip"
         class="mobile-tip"
       >
         📱 手机端：{{ item.mobileTip }}

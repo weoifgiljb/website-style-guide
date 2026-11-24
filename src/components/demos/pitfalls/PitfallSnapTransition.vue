@@ -1,7 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   replayTick: { type: Number, default: 0 }
 })
 
@@ -24,13 +24,6 @@ function toggleBad() {
   badOpen.value = !badOpen.value
   isOpen.value = goodOpen.value && badOpen.value
 }
-
-watch(
-  () => props.replayTick,
-  () => {
-    toggleBoth()
-  }
-)
 </script>
 
 <template>
@@ -158,6 +151,7 @@ watch(
 }
 
 .smooth-inner {
+  min-height: 0;
   overflow: hidden;
   padding: 0 8px;
   font-size: 10px;

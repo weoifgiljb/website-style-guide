@@ -15,7 +15,11 @@ const {
 </script>
 
 <template>
-  <div class="combo-bar" :class="{ show: selectedIds.length > 0 }">
+  <div
+    class="combo-bar"
+    :class="{ show: selectedIds.length > 0 }"
+    :inert="selectedIds.length === 0"
+  >
     <div class="combo-left">
       <div class="combo-title">
         <span>
@@ -70,6 +74,7 @@ const {
   bottom: 18px;
   transform: translate(-50%, 140%);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   z-index: 40;
   width: min(920px, calc(100% - 28px));
@@ -83,13 +88,21 @@ const {
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  transition: transform 0.3s var(--ease), opacity 0.25s ease;
+  transition:
+    transform 0.3s var(--ease),
+    opacity 0.25s ease,
+    visibility 0s linear 0.3s;
 }
 
 .combo-bar.show {
   transform: translate(-50%, 0);
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transition:
+    transform 0.3s var(--ease),
+    opacity 0.25s ease,
+    visibility 0s linear 0s;
 }
 
 .combo-left {

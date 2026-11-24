@@ -1,7 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   replayTick: { type: Number, default: 0 }
 })
 
@@ -10,13 +10,6 @@ const mode = ref('good')
 function toggleMode() {
   mode.value = mode.value === 'good' ? 'bad' : 'good'
 }
-
-watch(
-  () => props.replayTick,
-  () => {
-    toggleMode()
-  }
-)
 </script>
 
 <template>

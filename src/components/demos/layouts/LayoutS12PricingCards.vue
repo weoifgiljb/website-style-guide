@@ -80,7 +80,7 @@ const plans = computed(() => [
 .pr-desc { font-size: 8px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .layout-s12.is-compact .pr-card { padding: 7px 6px; }
-.layout-s12.is-mobile .pr-grid { grid-template-columns: 1fr; gap: 6px; }
+.layout-s12.is-mobile .pr-grid { grid-template-columns: 1fr; gap: 9px; }
 .layout-s12.is-mobile .pr-card {
   display: flex;
   align-items: center;

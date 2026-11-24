@@ -478,38 +478,47 @@ test('every PITFALL_ITEMS demoKey maps to an existing, valid, scoped Vue SFC wit
 test('PitfallAmplitude cleans up timers in onUnmounted and all 6 pitfall components render exact comparison copy', () => {
   const p01 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallAmplitude.vue'), 'utf8')
   assert.match(p01, /\bonUnmounted\s*\(/, 'PitfallAmplitude.vue must register onUnmounted() timer cleanup')
+  assert.match(p01, /\bwatch\s*\(/, 'PitfallAmplitude.vue must watch replayTick for simultaneous trigger demo')
   assert.match(p01, /悬停或点对比体验/, 'PitfallAmplitude.vue must render exact badge text')
   assert.match(p01, /▶ 同时触发对比/, 'PitfallAmplitude.vue must render exact action text')
   assert.match(p01, /1100/, 'PitfallAmplitude.vue must hold demo state for 1100ms')
 
   const p02 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallDensity.vue'), 'utf8')
+  assert.doesNotMatch(p02, /\bwatch\s*\(/, 'PitfallDensity.vue must not flip mode on replayTick')
   assert.match(p02, /✅ 当前：单焦点克制/, 'PitfallDensity.vue must render good badge')
   assert.match(p02, /❌ 当前：全屏乱飞反例/, 'PitfallDensity.vue must render bad badge')
   assert.match(p02, /看反例效果/, 'PitfallDensity.vue must render toggle to bad text')
   assert.match(p02, /切回推荐效果/, 'PitfallDensity.vue must render toggle to good text')
 
   const p03 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallSnapTransition.vue'), 'utf8')
+  assert.doesNotMatch(p03, /\bwatch\s*\(/, 'PitfallSnapTransition.vue must not flip mode on replayTick')
   assert.match(p03, /点击两侧展开对比/, 'PitfallSnapTransition.vue must render exact badge text')
   assert.match(p03, /⇄ 同步切换两侧/, 'PitfallSnapTransition.vue must render exact action text')
   assert.match(p03, /grid-template-rows/, 'PitfallSnapTransition.vue must use grid-template-rows smooth height transition')
+  assert.match(p03, /min-height:\s*0/, 'PitfallSnapTransition.vue .smooth-inner must set min-height: 0')
 
   const p04 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallMobileStack.vue'), 'utf8')
+  assert.doesNotMatch(p04, /\bwatch\s*\(/, 'PitfallMobileStack.vue must not flip mode on replayTick')
   assert.match(p04, /📱 390px：✅ 单列堆叠/, 'PitfallMobileStack.vue must render good badge')
   assert.match(p04, /📱 390px：❌ 强塞三栏/, 'PitfallMobileStack.vue must render bad badge')
   assert.match(p04, /看挤扁反例/, 'PitfallMobileStack.vue must render toggle to bad text')
   assert.match(p04, /看正确降级/, 'PitfallMobileStack.vue must render toggle to good text')
 
   const p05 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallMobileSticky.vue'), 'utf8')
+  assert.doesNotMatch(p05, /\bwatch\s*\(/, 'PitfallMobileSticky.vue must not flip mode on replayTick')
   assert.match(p05, /📱 390px：✅ 纵向分段/, 'PitfallMobileSticky.vue must render good badge')
   assert.match(p05, /📱 390px：❌ 强行左右分栏/, 'PitfallMobileSticky.vue must render bad badge')
   assert.match(p05, /看挤压反例/, 'PitfallMobileSticky.vue must render toggle to bad text')
   assert.match(p05, /看正确降级/, 'PitfallMobileSticky.vue must render toggle to good text')
 
   const p06 = fs.readFileSync(path.join(PITFALLS_DIR, 'PitfallMobileFloating.vue'), 'utf8')
+  assert.doesNotMatch(p06, /\bwatch\s*\(/, 'PitfallMobileFloating.vue must not flip mode on replayTick')
   assert.match(p06, /📱 390px：✅ 收起防遮挡/, 'PitfallMobileFloating.vue must render good badge')
   assert.match(p06, /📱 390px：❌ 悬浮遮挡文案/, 'PitfallMobileFloating.vue must render bad badge')
   assert.match(p06, /看遮挡反例/, 'PitfallMobileFloating.vue must render toggle to bad text')
   assert.match(p06, /看正确做法/, 'PitfallMobileFloating.vue must render toggle to good text')
+  assert.match(p06, /标题与按钮 100% 清晰无遮挡/, 'PitfallMobileFloating.vue must render good subtitle')
+  assert.match(p06, /❌ 悬浮气泡压住主标题与行动按钮/, 'PitfallMobileFloating.vue must render bad subtitle')
 })
 
 test('pitfalls/index.js imports and exports PITFALL_DEMO_MAP covering all 6 PITFALL_ITEMS demoKeys', () => {

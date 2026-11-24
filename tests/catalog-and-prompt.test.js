@@ -147,6 +147,21 @@ test('filterCatalogItems filters by category and case-insensitive keyword across
   })
   assert.equal(marquee.length, 1)
   assert.equal(marquee[0].id, 'M-13')
+
+  const byMobileTipMotion = filterCatalogItems({
+    items: ALL_ITEMS,
+    activeCategory: 'all',
+    searchQuery: 'tabular-nums'
+  })
+  assert.equal(byMobileTipMotion.length, 1)
+  assert.equal(byMobileTipMotion[0].id, 'M-12')
+
+  const byMobileTipPitfall = filterCatalogItems({
+    items: ALL_ITEMS,
+    activeCategory: 'all',
+    searchQuery: 'cubic-bezier'
+  })
+  assert.ok(byMobileTipPitfall.some((item) => item.id === 'P-01'))
 })
 
 test('buildCodexPrompt outputs ordered floors with bound motions, unbound motions, and pitfall rules', () => {

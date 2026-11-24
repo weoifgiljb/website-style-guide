@@ -29,6 +29,16 @@ const steps = [
 const activeStep = ref(0)
 const leftRef = ref(null)
 let autoTimer = null
+let programmaticTimer = null
+let isProgrammaticScroll = false
+
+function clearProgrammaticGuard() {
+  isProgrammaticScroll = false
+  if (programmaticTimer !== null) {
+    clearTimeout(programmaticTimer)
+    programmaticTimer = null
+  }
+}
 
 function clearAutoTimer() {
   if (autoTimer !== null) {
@@ -37,16 +47,28 @@ function clearAutoTimer() {
   }
 }
 
-function selectStep(idx, el) {
+function onManualScrollIntent() {
   clearAutoTimer()
+  clearProgrammaticGuard()
+}
+
+function selectStep(idx) {
+  clearAutoTimer()
+  clearProgrammaticGuard()
   activeStep.value = idx
-  if (el && typeof el.scrollIntoView === 'function') {
-    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  if (leftRef.value) {
+    isProgrammaticScroll = true
+    const max = Math.max(0, leftRef.value.scrollHeight - leftRef.value.clientHeight)
+    leftRef.value.scrollTop = Math.round((idx / (steps.length - 1)) * max)
+    programmaticTimer = setTimeout(() => {
+      isProgrammaticScroll = false
+      programmaticTimer = null
+    }, 450)
   }
 }
 
 function onLeftScroll(e) {
-  if (autoTimer !== null) return
+  if (autoTimer !== null || isProgrammaticScroll) return
   const el = e.currentTarget
   if (!el) return
   const max = el.scrollHeight - el.clientHeight
@@ -57,6 +79,7 @@ function onLeftScroll(e) {
 
 function runAutoDemo() {
   clearAutoTimer()
+  clearProgrammaticGuard()
   let step = 0
   activeStep.value = 0
   if (leftRef.value) {
@@ -78,6 +101,7 @@ function runAutoDemo() {
 
 onUnmounted(() => {
   clearAutoTimer()
+  clearProgrammaticGuard()
 })
 </script>
 
@@ -89,8 +113,8 @@ onUnmounted(() => {
       <div
         ref="leftRef"
         class="sticky-left"
-        @wheel="clearAutoTimer"
-        @touchmove="clearAutoTimer"
+        @wheel="onManualScrollIntent"
+        @touchmove="onManualScrollIntent"
         @scroll="onLeftScroll"
       >
         <div
@@ -98,7 +122,7 @@ onUnmounted(() => {
           :key="item.label"
           class="sticky-step"
           :class="{ active: activeStep === idx }"
-          @click.stop="selectStep(idx, $event.currentTarget)"
+          @click.stop="selectStep(idx)"
         >
           {{ item.label }}
         </div>

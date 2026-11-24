@@ -217,8 +217,12 @@ onUnmounted(() => {
                 </div>
 
                 <div class="floor-motion-row">
-                  <label class="motion-select-label">搭配本屏动效（可选）</label>
+                  <label
+                    class="motion-select-label"
+                    :for="'floor-motion-' + layoutId"
+                  >搭配本屏动效（可选）</label>
                   <select
+                    :id="'floor-motion-' + layoutId"
                     class="motion-select"
                     :value="floorMotionMap[layoutId] || ''"
                     @change="setFloorMotion(layoutId, $event.target.value)"
@@ -801,7 +805,7 @@ onUnmounted(() => {
 }
 
 .device-frame.is-phone {
-  width: 375px;
+  width: 402px;
   max-width: 100%;
   border: 6px solid #1e293b;
   border-radius: 30px;

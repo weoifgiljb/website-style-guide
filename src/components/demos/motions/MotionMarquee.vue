@@ -88,7 +88,7 @@ const marqueeItems = [...channels, ...channels]
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(calc(-50% - 5px));
   }
 }
 </style>
