@@ -307,6 +307,7 @@ onUnmounted(() => {
         :class="{
           'is-zoom-clip': motionId === 'M-07',
           'is-tab-fade': motionId === 'M-09' && tabFading,
+          'has-sticky-step': motionId === 'M-10',
           [`sticky-accent-${stickyStep}`]: motionId === 'M-10'
         }"
       >
@@ -492,7 +493,7 @@ onUnmounted(() => {
 .floor-layout-host { transition: opacity 0.2s ease, box-shadow 0.25s ease; }
 .floor-layout-host.is-tab-fade { opacity: 0.42; }
 
-/* M-10 Sticky Step Bar */
+/* M-10 Sticky Step Bar & Synchronized Card Highlight */
 .bp-sticky-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .bp-step-pill {
   border: 1px solid var(--border); background: var(--surface-soft); color: var(--text-secondary);
@@ -500,9 +501,56 @@ onUnmounted(() => {
   transition: all var(--dur, 0.28s) var(--ease);
 }
 .bp-step-pill.active { background: var(--primary); border-color: var(--primary); color: #ffffff; }
-.floor-layout-host.sticky-accent-0 { border-radius: 10px; box-shadow: inset 3px 0 0 var(--primary); }
-.floor-layout-host.sticky-accent-1 { border-radius: 10px; box-shadow: inset 0 -3px 0 var(--accent); }
-.floor-layout-host.sticky-accent-2 { border-radius: 10px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22); }
+
+.floor-layout-host.has-sticky-step :deep(.m3-card),
+.floor-layout-host.has-sticky-step :deep(.step-card),
+.floor-layout-host.has-sticky-step :deep(.mch-cell),
+.floor-layout-host.has-sticky-step :deep(.ms-item),
+.floor-layout-host.has-sticky-step :deep(.layout-s08 > *),
+.floor-layout-host.has-sticky-step :deep(.pr-grid > *),
+.floor-layout-host.has-sticky-step :deep(.ma-row),
+.floor-layout-host.has-sticky-step :deep(.cmp-card),
+.floor-layout-host.has-sticky-step :deep(.tm-card) {
+  opacity: 0.56;
+  transition:
+    opacity var(--dur, 0.28s) var(--ease),
+    transform var(--dur, 0.28s) var(--ease),
+    border-color var(--dur, 0.28s) var(--ease),
+    box-shadow var(--dur, 0.28s) var(--ease);
+}
+
+.floor-layout-host.sticky-accent-0 :deep(.m3-card:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.step-card:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.mch-cell:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.ms-item:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.layout-s08 > *:nth-child(1)),
+.floor-layout-host.sticky-accent-0 :deep(.pr-grid > *:nth-child(1)),
+.floor-layout-host.sticky-accent-0 :deep(.ma-row:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.cmp-card:nth-of-type(1)),
+.floor-layout-host.sticky-accent-0 :deep(.tm-card:nth-of-type(1)),
+.floor-layout-host.sticky-accent-1 :deep(.m3-card:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.step-card:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.mch-cell:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.ms-item:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.layout-s08 > *:nth-child(2)),
+.floor-layout-host.sticky-accent-1 :deep(.pr-grid > *:nth-child(2)),
+.floor-layout-host.sticky-accent-1 :deep(.ma-row:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.cmp-card:nth-of-type(2)),
+.floor-layout-host.sticky-accent-1 :deep(.tm-card:nth-of-type(2)),
+.floor-layout-host.sticky-accent-2 :deep(.m3-card:nth-of-type(3)),
+.floor-layout-host.sticky-accent-2 :deep(.step-card:nth-of-type(3)),
+.floor-layout-host.sticky-accent-2 :deep(.mch-cell:nth-of-type(3)),
+.floor-layout-host.sticky-accent-2 :deep(.ms-item:nth-of-type(3)),
+.floor-layout-host.sticky-accent-2 :deep(.layout-s08 > *:nth-child(3)),
+.floor-layout-host.sticky-accent-2 :deep(.pr-grid > *:nth-child(3)),
+.floor-layout-host.sticky-accent-2 :deep(.ma-row:last-of-type),
+.floor-layout-host.sticky-accent-2 :deep(.cmp-card:last-of-type),
+.floor-layout-host.sticky-accent-2 :deep(.tm-card:last-of-type) {
+  opacity: 1;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18), var(--shadow-sm);
+  transform: translateY(-2px);
+}
 
 /* M-11 Parallax */
 .bp-parallax-layer { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
