@@ -187,7 +187,12 @@ test('shell components enforce decluttered 2-col layout, dual-viewport switching
   assert.match(combo, /visibility:\s*visible/, 'ComboFloatingBar must restore visibility when shown')
   assert.match(combo, /一键复制给 Codex 话术/, 'ComboFloatingBar must render primary copy button')
 
+  const presetStrip = fs.readFileSync(path.join(SHELL_DIR, 'PresetShowcaseStrip.vue'), 'utf8')
+  assert.match(presetStrip, /const\s+isCollapsed\s*=\s*ref\(\s*true\s*\)/, 'PresetShowcaseStrip must collapse by default so cards show above the fold')
+
   const drawer = fs.readFileSync(path.join(SHELL_DIR, 'PageBlueprintDrawer.vue'), 'utf8')
+  assert.match(drawer, /MotionTooltip/, 'PageBlueprintDrawer must render MotionTooltip for floor motion hover previews')
+  assert.match(drawer, /toggleFloorMotion/, 'PageBlueprintDrawer must support multi-selecting motions per floor')
   assert.match(drawer, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'PageBlueprintDrawer must render exact title')
   assert.match(drawer, /PAGE_PRESETS/, 'PageBlueprintDrawer must render quick presets')
   assert.match(drawer, /BlueprintFloorPreview/, 'PageBlueprintDrawer must render floors via BlueprintFloorPreview')

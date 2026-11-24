@@ -142,6 +142,35 @@ export const COMPETITOR_VISUAL_OPTIONS = [
   }
 ]
 
+export const MOTION_TOOLTIP_ANIM_MAP = {
+  'M-01': 'scroll-enter',
+  'M-02': 'card-stagger',
+  'M-03': 'zoom-pop',
+  'M-04': 'text-rotate',
+  'M-05': 'hover-react',
+  'M-06': 'spotlight-glow',
+  'M-07': 'img-zoom',
+  'M-08': 'smooth-expand',
+  'M-09': 'click-switch',
+  'M-10': 'pin-swap',
+  'M-11': 'scroll-scrub',
+  'M-12': 'number-bar',
+  'M-13': 'loop-pulse',
+  'M-14': 'float-pulse',
+  'M-15': 'auto-progress',
+  'M-16': 'path-pulse',
+  'M-17': 'stagger-stream'
+}
+
+function normalizeFloorMotionIds(rawValue) {
+  if (Array.isArray(rawValue)) {
+    return rawValue.filter(Boolean)
+  }
+  if (typeof rawValue === 'string' && rawValue.trim()) {
+    return [rawValue.trim()]
+  }
+  return []
+}
 function stripTrailingPeriod(text = '') {
   return String(text).trim().replace(/[。.]$/, '')
 }
@@ -292,16 +321,24 @@ export function buildCodexPrompt({
     lines.push('【一、整页楼层版式与动效编排（按从上到下顺序）】')
     activeFloors.forEach((layoutId, idx) => {
       const layout = itemsById[layoutId]
-      const motionId = floorMotionMap ? floorMotionMap[layoutId] : ''
-      const motion =
-        motionId && itemsById[motionId] && itemsById[motionId].kind === 'motion'
-          ? itemsById[motionId]
-          : null
+      const rawFloorMotions = floorMotionMap ? floorMotionMap[layoutId] : ''
+      const motions = normalizeFloorMotionIds(rawFloorMotions)
+        .map((mId) => itemsById[mId])
+        .filter((item) => item && item.kind === 'motion')
 
       let floorLine = `第 ${idx + 1} 屏【${layout.code} ${layout.name}】：${stripTrailingPeriod(layout.prompt)}。`
-      if (motion) {
+      if (motions.length === 1) {
+        const motion = motions[0]
         boundMotionIds.add(motion.id)
         floorLine += `（本屏搭配动效「${motion.name}（${motion.en}）」：${stripTrailingPeriod(motion.prompt)}。）`
+      } else if (motions.length > 1) {
+        const joined = motions
+          .map((motion, mIdx) => {
+            boundMotionIds.add(motion.id)
+            return `${mIdx + 1})「${motion.name}（${motion.en}）」：${stripTrailingPeriod(motion.prompt)}`
+          })
+          .join('；')
+        floorLine += `（本屏组合搭配 ${motions.length} 项动效：${joined}。）`
       }
       lines.push(floorLine)
     })

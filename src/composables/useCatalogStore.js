@@ -14,6 +14,7 @@ const selectedIds = ref([])
 const manualSelectedIds = new Set()
 const floorOrder = ref([])
 const floorMotionMap = reactive({})
+const floorMotionsMap = reactive({})
 const pageTarget = ref('')
 const isDrawerOpen = ref(false)
 const isCompetitorModalOpen = ref(false)
@@ -71,7 +72,7 @@ const generatedPrompt = computed(() =>
   buildCodexPrompt({
     pageTarget: pageTarget.value,
     floorOrder: floorOrder.value,
-    floorMotionMap,
+    floorMotionMap: floorMotionsMap,
     selectedIds: selectedIds.value,
     itemsById: ITEMS_BY_ID,
     competitorRef: attachedCompetitorRef.value
@@ -109,9 +110,21 @@ function isSelected(itemId) {
   return selectedIds.value.includes(itemId)
 }
 
+function getFloorMotions(layoutId) {
+  const list = floorMotionsMap[layoutId]
+  if (Array.isArray(list)) return list
+  const single = floorMotionMap[layoutId]
+  return single ? [single] : []
+}
+
+function syncFloorMotionScalar(layoutId) {
+  const list = Array.isArray(floorMotionsMap[layoutId]) ? floorMotionsMap[layoutId] : []
+  floorMotionMap[layoutId] = list[0] || ''
+}
+
 function isMotionBoundAnywhere(motionId) {
   if (!motionId) return false
-  return floorOrder.value.some((layoutId) => floorMotionMap[layoutId] === motionId)
+  return floorOrder.value.some((layoutId) => getFloorMotions(layoutId).includes(motionId))
 }
 
 function pruneAutoAttachedItems(candidateMotionId = '') {
@@ -148,11 +161,22 @@ function toggleSelect(itemId) {
     manualSelectedIds.delete(itemId)
     selectedIds.value = selectedIds.value.filter((id) => id !== itemId)
     if (item.kind === 'style') {
-      const prevMotion = floorMotionMap[itemId] || ''
+      const prevMotions = [...getFloorMotions(itemId)]
       floorOrder.value = floorOrder.value.filter((id) => id !== itemId)
       delete floorMotionMap[itemId]
-      pruneAutoAttachedItems(prevMotion)
+      delete floorMotionsMap[itemId]
+      if (prevMotions.length > 0) {
+        prevMotions.forEach((mId) => pruneAutoAttachedItems(mId))
+      } else {
+        pruneAutoAttachedItems('')
+      }
     } else if (item.kind === 'motion') {
+      Object.keys(floorMotionsMap).forEach((layoutId) => {
+        if (Array.isArray(floorMotionsMap[layoutId]) && floorMotionsMap[layoutId].includes(itemId)) {
+          floorMotionsMap[layoutId] = floorMotionsMap[layoutId].filter((id) => id !== itemId)
+          syncFloorMotionScalar(layoutId)
+        }
+      })
       Object.keys(floorMotionMap).forEach((layoutId) => {
         if (floorMotionMap[layoutId] === itemId) {
           floorMotionMap[layoutId] = ''
@@ -204,20 +228,47 @@ function moveFloorDown(layoutId) {
 }
 
 function setFloorMotion(layoutId, motionId) {
-  const prevMotion = floorMotionMap[layoutId] || ''
-  const normalized = motionId || ''
+  const prevMotions = [...getFloorMotions(layoutId)]
+  const normalized =
+    motionId && ITEMS_BY_ID[motionId] && ITEMS_BY_ID[motionId].kind === 'motion'
+      ? motionId
+      : ''
+  floorMotionsMap[layoutId] = normalized ? [normalized] : []
   floorMotionMap[layoutId] = normalized
-  if (
-    normalized &&
-    ITEMS_BY_ID[normalized] &&
-    ITEMS_BY_ID[normalized].kind === 'motion' &&
-    !selectedIds.value.includes(normalized)
-  ) {
+  if (normalized && !selectedIds.value.includes(normalized)) {
     selectedIds.value = [...selectedIds.value, normalized]
   }
-  if (prevMotion && prevMotion !== normalized) {
-    pruneAutoAttachedItems(prevMotion)
+  prevMotions.forEach((prevId) => {
+    if (prevId !== normalized) {
+      pruneAutoAttachedItems(prevId)
+    }
+  })
+}
+
+function toggleFloorMotion(layoutId, motionId) {
+  if (!layoutId || !motionId) return
+  const mItem = ITEMS_BY_ID[motionId]
+  if (!mItem || mItem.kind !== 'motion') return
+
+  const current = [...getFloorMotions(layoutId)]
+  if (current.includes(motionId)) {
+    floorMotionsMap[layoutId] = current.filter((id) => id !== motionId)
+    syncFloorMotionScalar(layoutId)
+    pruneAutoAttachedItems(motionId)
+  } else {
+    floorMotionsMap[layoutId] = [...current, motionId]
+    syncFloorMotionScalar(layoutId)
+    if (!selectedIds.value.includes(motionId)) {
+      selectedIds.value = [...selectedIds.value, motionId]
+    }
   }
+}
+
+function clearFloorMotions(layoutId) {
+  const prevMotions = [...getFloorMotions(layoutId)]
+  floorMotionsMap[layoutId] = []
+  floorMotionMap[layoutId] = ''
+  prevMotions.forEach((prevId) => pruneAutoAttachedItems(prevId))
 }
 
 function applyPreset(presetId) {
@@ -228,11 +279,14 @@ function applyPreset(presetId) {
   Object.keys(floorMotionMap).forEach((key) => {
     delete floorMotionMap[key]
   })
+  Object.keys(floorMotionsMap).forEach((key) => {
+    delete floorMotionsMap[key]
+  })
 
   const nextFloors = []
   const nextSelected = []
 
-  preset.floors.forEach(({ layoutId, motionId }) => {
+  preset.floors.forEach(({ layoutId, motionId, motionIds }) => {
     if (layoutId && ITEMS_BY_ID[layoutId]) {
       if (!nextFloors.includes(layoutId)) {
         nextFloors.push(layoutId)
@@ -240,14 +294,21 @@ function applyPreset(presetId) {
       if (!nextSelected.includes(layoutId)) {
         nextSelected.push(layoutId)
       }
-      const validMotion =
-        motionId && ITEMS_BY_ID[motionId] && ITEMS_BY_ID[motionId].kind === 'motion'
-          ? motionId
-          : ''
-      floorMotionMap[layoutId] = validMotion
-      if (validMotion && !nextSelected.includes(validMotion)) {
-        nextSelected.push(validMotion)
-      }
+      const rawList = Array.isArray(motionIds)
+        ? motionIds
+        : motionId
+          ? [motionId]
+          : []
+      const validList = rawList.filter(
+        (mId) => mId && ITEMS_BY_ID[mId] && ITEMS_BY_ID[mId].kind === 'motion'
+      )
+      floorMotionsMap[layoutId] = validList
+      floorMotionMap[layoutId] = validList[0] || ''
+      validList.forEach((mId) => {
+        if (!nextSelected.includes(mId)) {
+          nextSelected.push(mId)
+        }
+      })
     }
   })
 
@@ -269,6 +330,9 @@ function clearSelection() {
   attachedCompetitorRef.value = null
   Object.keys(floorMotionMap).forEach((key) => {
     delete floorMotionMap[key]
+  })
+  Object.keys(floorMotionsMap).forEach((key) => {
+    delete floorMotionsMap[key]
   })
 }
 
@@ -362,6 +426,7 @@ export function useCatalogStore() {
     selectedIds,
     floorOrder,
     floorMotionMap,
+    floorMotionsMap,
     pageTarget,
     isDrawerOpen,
     isCompetitorModalOpen,
@@ -384,7 +449,10 @@ export function useCatalogStore() {
     removeItem,
     moveFloorUp,
     moveFloorDown,
+    getFloorMotions,
     setFloorMotion,
+    toggleFloorMotion,
+    clearFloorMotions,
     addFloor,
     applyPreset,
     clearSelection,

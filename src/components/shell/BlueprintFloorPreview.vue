@@ -6,10 +6,13 @@ const props = defineProps({
   floorIndex: { type: Number, required: true },
   layoutItem: { type: Object, required: true },
   motionItem: { type: Object, default: null },
+  motionItems: { type: Array, default: () => [] },
   viewport: { type: String, default: 'desktop' },
   replayKey: { type: Number, default: 0 },
   scrollRatio: { type: Number, default: 0 }
 })
+
+const emit = defineEmits(['hover-motion', 'leave-motion'])
 
 const CHANNELS = ['WhatsApp', 'Messenger', 'Instagram', 'LINE']
 const TABS = ['场景 A · 获客', '场景 B · 接待', '场景 C · 复购']
@@ -17,10 +20,26 @@ const STICKY_STEPS = ['① 接入账号', '② 智能分流', '③ 沉淀转化'
 const AUTO_TABS = ['① AI 意图分流', '② 多语实时互译', '③ 广告归因回传']
 const MARQUEE_CHANNELS = ['WhatsApp', 'Messenger', 'Instagram', 'Telegram', 'LINE', 'TikTok']
 
-const motionId = computed(() => props.motionItem?.id || '')
-const isEntranceMotion = computed(() => ['M-01', 'M-02', 'M-03'].includes(motionId.value))
+const resolvedMotions = computed(() => {
+  if (Array.isArray(props.motionItems) && props.motionItems.length > 0) {
+    return props.motionItems.filter(Boolean)
+  }
+  return props.motionItem ? [props.motionItem] : []
+})
+
+const motionIds = computed(() => resolvedMotions.value.map((m) => m.id))
+const motionId = computed(() => motionIds.value[0] || '')
+
+function hasMotion(id) {
+  return motionIds.value.includes(id)
+}
+
+const isEntranceMotion = computed(() =>
+  hasMotion('M-01') || hasMotion('M-02') || hasMotion('M-03')
+)
 
 const actionLabel = computed(() => {
+  if (motionIds.value.length > 1) return '↻ 联动演示'
   if (['M-01', 'M-02', 'M-03', 'M-12', 'M-15', 'M-17'].includes(motionId.value)) return '↻ 重播'
   if (motionId.value === 'M-04') return '⇄ 切模式'
   return '▶ 演示动效'
@@ -49,6 +68,7 @@ let tabTimer = null
 let autoTabTimer = null
 let flowTimer = null
 const stepTimers = []
+const chatTimers = []
 let countRaf = null
 let parallaxRaf = null
 
@@ -58,6 +78,7 @@ function clearTransientTimers() {
   if (autoTabTimer) { clearInterval(autoTabTimer); autoTabTimer = null }
   if (flowTimer) { clearInterval(flowTimer); flowTimer = null }
   while (stepTimers.length) clearTimeout(stepTimers.pop())
+  while (chatTimers.length) clearTimeout(chatTimers.pop())
   if (countRaf) { cancelAnimationFrame(countRaf); countRaf = null }
   if (parallaxRaf) { cancelAnimationFrame(parallaxRaf); parallaxRaf = null }
 }
@@ -77,7 +98,7 @@ function pulseDemo(duration = 950) {
 
 function startTextLoop() {
   clearTextTimers()
-  if (motionId.value !== 'M-04') return
+  if (!hasMotion('M-04')) return
   if (textMode.value === 'rotate') {
     rotateTimer = setInterval(() => {
       wordIdx.value = (wordIdx.value + 1) % CHANNELS.length
@@ -189,42 +210,58 @@ function startChannelFlow() {
 }
 
 function playChatStream() {
-  while (stepTimers.length) clearTimeout(stepTimers.pop())
+  while (chatTimers.length) clearTimeout(chatTimers.pop())
   chatStep.value = 1
-  stepTimers.push(setTimeout(() => { chatStep.value = 2 }, 400))
-  stepTimers.push(setTimeout(() => { chatStep.value = 3 }, 980))
+  chatTimers.push(setTimeout(() => { chatStep.value = 2 }, 400))
+  chatTimers.push(setTimeout(() => { chatStep.value = 3 }, 980))
 }
 
 function runBoundMotion(isManualClick = false) {
   clearTransientTimers()
   isDemoActive.value = false
   parallaxWave.value = 0
-  const id = motionId.value
-  if (!id) return
+  if (motionIds.value.length === 0) return
+
   if (isEntranceMotion.value) {
     stageAnimKey.value += 1
-  } else if (id === 'M-04') {
+  }
+  if (hasMotion('M-04')) {
     if (isManualClick) {
       textMode.value = textMode.value === 'rotate' ? 'typewriter' : 'rotate'
     }
     startTextLoop()
-  } else if (id === 'M-05' || id === 'M-06' || id === 'M-07' || id === 'M-13' || id === 'M-14') {
+  }
+  if (
+    hasMotion('M-05') ||
+    hasMotion('M-06') ||
+    hasMotion('M-07') ||
+    hasMotion('M-13') ||
+    hasMotion('M-14')
+  ) {
     pulseDemo(950)
-  } else if (id === 'M-08') {
+  }
+  if (hasMotion('M-08')) {
     accordionOpen.value = isManualClick ? !accordionOpen.value : true
-  } else if (id === 'M-09') {
+  }
+  if (hasMotion('M-09')) {
     selectTab((activeTab.value + 1) % TABS.length)
-  } else if (id === 'M-10') {
+  }
+  if (hasMotion('M-10')) {
     playStickySequence()
-  } else if (id === 'M-11') {
+  }
+  if (hasMotion('M-11')) {
     runParallaxWave()
-  } else if (id === 'M-12') {
+  }
+  if (hasMotion('M-12')) {
     runCountUp()
-  } else if (id === 'M-15') {
+  }
+  if (hasMotion('M-15')) {
     startAutoTabs()
-  } else if (id === 'M-16') {
+  }
+  if (hasMotion('M-16')) {
     startChannelFlow()
-  } else if (id === 'M-17') {
+  }
+  if (hasMotion('M-17')) {
     playChatStream()
   }
 }
@@ -245,14 +282,19 @@ const orbBackStyle = computed(() => {
   return { transform: `translate3d(0, ${y.toFixed(1)}px, 0)` }
 })
 
-watch([motionId, () => props.replayKey], ([nextId, nextReplay], [prevId]) => {
-  if (nextId !== 'M-04') clearTextTimers()
-  if (nextId !== prevId && nextId === 'M-08') accordionOpen.value = false
-  runBoundMotion(false)
-})
+watch(
+  [() => motionIds.value.join(','), () => props.replayKey],
+  ([nextKey], [prevKey]) => {
+    if (!hasMotion('M-04')) clearTextTimers()
+    if (nextKey !== prevKey && !prevKey?.includes('M-08') && hasMotion('M-08')) {
+      accordionOpen.value = false
+    }
+    runBoundMotion(false)
+  }
+)
 
 onMounted(() => {
-  if (motionId.value) runBoundMotion(false)
+  if (motionIds.value.length > 0) runBoundMotion(false)
 })
 
 onUnmounted(() => {
@@ -265,9 +307,9 @@ onUnmounted(() => {
   <div
     class="blueprint-floor"
     :class="{
-      'has-hover-lift': motionId === 'M-05',
-      'has-border-glow': motionId === 'M-06',
-      'has-img-zoom': motionId === 'M-07',
+      'has-hover-lift': hasMotion('M-05'),
+      'has-border-glow': hasMotion('M-06'),
+      'has-img-zoom': hasMotion('M-07'),
       'is-demo': isDemoActive
     }"
   >
@@ -275,8 +317,16 @@ onUnmounted(() => {
       <span class="strip-title">
         F{{ floorIndex + 1 }} · {{ layoutItem.code }} {{ layoutItem.name }}
       </span>
-      <div v-if="motionItem" class="strip-right">
-        <span class="strip-motion-pill">✨ {{ motionItem.name }}</span>
+      <div v-if="resolvedMotions.length > 0" class="strip-right">
+        <span
+          v-for="m in resolvedMotions"
+          :key="m.id"
+          class="strip-motion-pill"
+          @mouseenter="emit('hover-motion', m, $event)"
+          @mouseleave="emit('leave-motion')"
+        >
+          ✨ {{ m.code }} {{ m.name }}
+        </span>
         <button type="button" class="strip-action-btn" @click="triggerFloorMotion">
           {{ actionLabel }}
         </button>
@@ -287,21 +337,21 @@ onUnmounted(() => {
       :key="isEntranceMotion ? stageAnimKey : 'steady'"
       class="floor-stage-inner"
       :class="{
-        'anim-bp-fade-up': motionId === 'M-01',
-        'anim-bp-stagger': motionId === 'M-02',
-        'anim-bp-zoom': motionId === 'M-03',
-        'has-parallax': motionId === 'M-11'
+        'anim-bp-fade-up': hasMotion('M-01') && !hasMotion('M-02'),
+        'anim-bp-stagger': hasMotion('M-02'),
+        'anim-bp-zoom': hasMotion('M-03') && !hasMotion('M-01') && !hasMotion('M-02'),
+        'has-parallax': hasMotion('M-11')
       }"
     >
       <!-- M-11 Parallax Depth Layer -->
-      <div v-if="motionId === 'M-11'" class="bp-parallax-layer" aria-hidden="true">
+      <div v-if="hasMotion('M-11')" class="bp-parallax-layer" aria-hidden="true">
         <span class="bp-orb orb-a" :style="orbBackStyle"></span>
         <span class="bp-orb orb-b" :style="orbFrontStyle">✦ 视差层次</span>
       </div>
 
       <!-- M-14 Float & Pulse Status -->
       <div
-        v-if="motionId === 'M-14'"
+        v-if="hasMotion('M-14')"
         class="bp-float-bar"
         :class="{ 'is-mobile': viewport === 'mobile', 'is-boost': isDemoActive }"
       >
@@ -310,7 +360,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-04 Typewriter / Text Rotate Banner -->
-      <div v-if="motionId === 'M-04'" class="bp-rotate-banner">
+      <div v-if="hasMotion('M-04')" class="bp-rotate-banner">
         <span>轻松连接</span>
         <span v-if="textMode === 'rotate'" class="bp-word-slot">
           <span :key="wordIdx" class="bp-word-slide">{{ CHANNELS[wordIdx] }}</span>
@@ -323,7 +373,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-09 Sliding Pill Tabs -->
-      <div v-if="motionId === 'M-09'" class="bp-tabs-bar">
+      <div v-if="hasMotion('M-09')" class="bp-tabs-bar">
         <span class="bp-tab-glider" :style="{ transform: `translateX(${activeTab * 100}%)` }"></span>
         <button
           v-for="(label, idx) in TABS"
@@ -338,7 +388,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-10 Sticky Step Progress -->
-      <div v-if="motionId === 'M-10'" class="bp-sticky-bar">
+      <div v-if="hasMotion('M-10')" class="bp-sticky-bar">
         <button
           v-for="(stepLabel, sIdx) in STICKY_STEPS"
           :key="stepLabel"
@@ -352,7 +402,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-15 Auto-Progress Tabs Strip -->
-      <div v-if="motionId === 'M-15'" class="bp-autotabs-bar">
+      <div v-if="hasMotion('M-15')" class="bp-autotabs-bar">
         <button
           v-for="(tLabel, aIdx) in AUTO_TABS"
           :key="tLabel"
@@ -370,7 +420,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-16 Omnichannel Routing Flow Strip -->
-      <div v-if="motionId === 'M-16'" class="bp-flow-strip">
+      <div v-if="hasMotion('M-16')" class="bp-flow-strip">
         <span class="bp-flow-node" :class="{ lit: flowPhase === 0 }">WhatsApp / IG / TikTok</span>
         <span class="bp-flow-beam"></span>
         <span class="bp-flow-node hub" :class="{ lit: flowPhase === 1 }">AI 统一路由中枢</span>
@@ -379,7 +429,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-17 AI Chat Reply Stream Strip -->
-      <div v-if="motionId === 'M-17'" class="bp-chat-strip">
+      <div v-if="hasMotion('M-17')" class="bp-chat-strip">
         <span v-if="chatStep >= 1" class="bp-chat-pill buyer">买：¿Cambiar talla a M?</span>
         <span v-if="chatStep === 2" class="bp-chat-pill thinking">AI 检索订单库 ···</span>
         <span v-if="chatStep >= 3" class="bp-chat-pill ai">✓ AI 西语秒回：已改 M 码</span>
@@ -389,11 +439,11 @@ onUnmounted(() => {
       <div
         class="floor-layout-host"
         :class="{
-          'is-zoom-clip': motionId === 'M-07',
-          'is-tab-fade': motionId === 'M-09' && tabFading,
-          'has-sticky-step': motionId === 'M-10' || motionId === 'M-15',
-          [`sticky-accent-${stickyStep}`]: motionId === 'M-10',
-          [`sticky-accent-${autoTabIdx}`]: motionId === 'M-15'
+          'is-zoom-clip': hasMotion('M-07'),
+          'is-tab-fade': hasMotion('M-09') && tabFading,
+          'has-sticky-step': hasMotion('M-10') || hasMotion('M-15'),
+          [`sticky-accent-${stickyStep}`]: hasMotion('M-10'),
+          [`sticky-accent-${autoTabIdx}`]: hasMotion('M-15') && !hasMotion('M-10')
         }"
       >
         <component
@@ -404,7 +454,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-12 Rolling Count-Up Strip -->
-      <div v-if="motionId === 'M-12'" class="bp-metrics-strip">
+      <div v-if="hasMotion('M-12')" class="bp-metrics-strip">
         <span><b>{{ metrics.stability }}%</b> 稳定率</span>
         <i class="bp-dot">·</i>
         <span><b>{{ metrics.companies }}+</b> 企业</span>
@@ -413,7 +463,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-08 Smooth Grid Accordion -->
-      <div v-if="motionId === 'M-08'" class="bp-accordion">
+      <div v-if="hasMotion('M-08')" class="bp-accordion">
         <button
           type="button"
           class="bp-acc-trigger"
@@ -431,7 +481,7 @@ onUnmounted(() => {
       </div>
 
       <!-- M-13 Seamless Channel Marquee -->
-      <div v-if="motionId === 'M-13'" class="bp-marquee" :class="{ 'is-boost': isDemoActive }">
+      <div v-if="hasMotion('M-13')" class="bp-marquee" :class="{ 'is-boost': isDemoActive }">
         <div class="bp-marquee-track">
           <span v-for="(ch, i) in [...MARQUEE_CHANNELS, ...MARQUEE_CHANNELS]" :key="i" class="bp-mq-chip">
             ● {{ ch }}
@@ -473,7 +523,7 @@ onUnmounted(() => {
 .strip-motion-pill {
   font-size: 11px; font-weight: 600; color: var(--primary);
   background: var(--primary-soft); border: 1px solid #bfdbfe;
-  padding: 1px 8px; border-radius: 999px;
+  padding: 1px 8px; border-radius: 999px; cursor: help;
 }
 .strip-action-btn {
   border: 1px solid var(--border); background: #ffffff; color: var(--text-secondary);

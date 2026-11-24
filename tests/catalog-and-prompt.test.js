@@ -310,6 +310,16 @@ test('useCatalogStore manages selection, presets, competitor modal & attachment,
   assert.equal(store.floorMotionMap['S-04'], 'M-16')
   assert.equal(store.floorMotionMap['S-13'], 'M-15')
 
+  // Multi-select motions on a single floor + prompt formatting
+  store.toggleFloorMotion('S-01', 'M-01')
+  store.toggleFloorMotion('S-01', 'M-06')
+  assert.deepEqual(store.getFloorMotions('S-01'), ['M-17', 'M-01', 'M-06'])
+  assert.match(store.generatedPrompt.value, /本屏组合搭配 3 项动效/)
+  store.toggleFloorMotion('S-01', 'M-06')
+  assert.deepEqual(store.getFloorMotions('S-01'), ['M-17', 'M-01'])
+  store.clearFloorMotions('S-01')
+  assert.deepEqual(store.getFloorMotions('S-01'), [])
+
   // Competitor modal & blueprint attachment flow
   store.openCompetitorModal()
   assert.equal(store.isCompetitorModalOpen.value, true)

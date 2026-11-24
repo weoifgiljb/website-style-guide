@@ -7,6 +7,7 @@ const props = defineProps({
   badge: { type: String, default: '' },
   tip: { type: String, default: '' },
   anim: { type: String, default: 'scroll-enter' },
+  placement: { type: String, default: 'auto' },
   anchorRect: { type: Object, default: null }
 })
 
@@ -64,10 +65,31 @@ onUnmounted(() => {
   clearLoop()
 })
 
+const isRightSide = computed(() => {
+  const rect = props.anchorRect
+  if (!rect || props.placement !== 'right') return false
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
+  const rightEdge = rect.right ?? rect.left + rect.width
+  return vw - rightEdge > 272
+})
+
 const tooltipStyle = computed(() => {
   const rect = props.anchorRect
   if (!rect) return { left: '50%', top: '50%' }
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+
+  if (isRightSide.value) {
+    const rightEdge = rect.right ?? rect.left + rect.width
+    const rowHeight = rect.height ?? (rect.bottom - rect.top)
+    const centerY = Math.min(vh - 96, Math.max(96, rect.top + rowHeight / 2))
+    return {
+      left: `${rightEdge + 12}px`,
+      top: `${centerY}px`,
+      transform: 'translate(0, -50%)'
+    }
+  }
+
   const halfWidth = 128
   const centerX = Math.min(vw - halfWidth - 12, Math.max(halfWidth + 12, rect.left + rect.width / 2))
   const placeBelow = rect.top < 172
@@ -86,7 +108,9 @@ const tooltipStyle = computed(() => {
   }
 })
 
-const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top < 172))
+const isBelow = computed(
+  () => !isRightSide.value && Boolean(props.anchorRect && props.anchorRect.top < 172)
+)
 </script>
 
 <template>
@@ -95,7 +119,7 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
       <div
         v-if="props.visible && props.anchorRect"
         class="motion-tooltip"
-        :class="{ 'is-below': isBelow }"
+        :class="{ 'is-below': isBelow, 'is-right': isRightSide }"
         :style="tooltipStyle"
         role="tooltip"
       >
@@ -302,7 +326,41 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
             </div>
           </div>
 
-          <!-- 12. number-bar: Rolling counter -->
+          <!-- 12. card-stagger: M-02 3 cards staggering up -->
+          <div v-else-if="anim === 'card-stagger'" class="scene scene-cardstagger">
+            <div class="cs-card c1"><i></i><span>卡 1</span></div>
+            <div class="cs-card c2"><i></i><span>卡 2</span></div>
+            <div class="cs-card c3"><i></i><span>卡 3</span></div>
+          </div>
+
+          <!-- 13. zoom-pop: M-03 gentle zoom pop in -->
+          <div v-else-if="anim === 'zoom-pop'" class="scene scene-zoompop">
+            <div class="zp-badge">🎉 0.88 → 1.0 轻缩放弹入</div>
+          </div>
+
+          <!-- 14. text-rotate: M-04 typewriter / word flip -->
+          <div v-else-if="anim === 'text-rotate'" class="scene scene-textrot">
+            <div class="tr-line">
+              <span>连接</span>
+              <b :key="activeSlot" class="tr-word">{{ activeSlot === 0 ? 'WhatsApp' : 'TikTok' }}</b>
+              <span>买家</span>
+            </div>
+          </div>
+
+          <!-- 15. img-zoom: M-07 image scale inside rounded clip -->
+          <div v-else-if="anim === 'img-zoom'" class="scene scene-imgzoom">
+            <div class="iz-frame">
+              <div class="iz-inner">🖼 框内柔和放大不撑破</div>
+            </div>
+          </div>
+
+          <!-- 16. float-pulse: M-14 online pulse + gentle float -->
+          <div v-else-if="anim === 'float-pulse'" class="scene scene-floatpulse">
+            <span class="fp-online"><i class="pulse-dot"></i>7×24 在线呼吸</span>
+            <span class="fp-bubble">💬 新咨询微浮 +1</span>
+          </div>
+
+          <!-- 17. number-bar: Rolling counter -->
           <div v-else class="scene scene-number">
             <div class="num-big">+{{ counterVal }}%</div>
             <div class="num-bar-track">
@@ -326,7 +384,7 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
 <style scoped>
 .motion-tooltip {
   position: fixed;
-  z-index: 220;
+  z-index: 260;
   width: 252px;
   background: #0f172a;
   color: #f8fafc;
@@ -354,6 +412,13 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
   bottom: auto;
   top: -5px;
   transform: translateX(-50%) rotate(225deg);
+}
+
+.motion-tooltip.is-right::after {
+  left: -5px;
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%) rotate(135deg);
 }
 
 .mt-stage {
@@ -1152,6 +1217,120 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
   padding-top: 5px;
 }
 
+/* Extra M-02 / M-03 / M-04 / M-07 / M-14 scenes */
+.scene-cardstagger {
+  gap: 5px;
+}
+
+.cs-card {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  padding: 7px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #1e40af;
+  animation: staggerPop 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.cs-card i {
+  width: 18px;
+  height: 5px;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+.cs-card.c2 { animation-delay: 0.14s; }
+.cs-card.c3 { animation-delay: 0.28s; }
+
+.zp-badge {
+  background: #eff6ff;
+  border: 1.5px solid #2563eb;
+  color: #1d4ed8;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 999px;
+  animation: miniZoomPop 1.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.tr-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.tr-word {
+  display: inline-block;
+  min-width: 68px;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #2563eb;
+  animation: quickSwap 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.iz-frame {
+  width: 172px;
+  height: 54px;
+  border-radius: 8px;
+  border: 1.5px solid #64748b;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.iz-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  animation: miniImgZoom 1.8s ease-in-out infinite alternate;
+}
+
+.scene-floatpulse {
+  flex-direction: column;
+  gap: 7px;
+}
+
+.fp-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.fp-bubble {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #ffffff;
+  border: 1px solid #93c5fd;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.12);
+  animation: miniFloatY 1.6s ease-in-out infinite;
+}
+
 /* Number bar */
 .scene-number {
   flex-direction: column;
@@ -1269,5 +1448,21 @@ const isBelow = computed(() => Boolean(props.anchorRect && props.anchorRect.top 
 @keyframes shimmerSweep {
   0% { transform: translateX(-110%); }
   65%, 100% { transform: translateX(110%); }
+}
+
+@keyframes miniZoomPop {
+  0%, 15% { opacity: 0; transform: scale(0.84); }
+  45%, 85% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.96); }
+}
+
+@keyframes miniImgZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.09); }
+}
+
+@keyframes miniFloatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { PAGE_PRESETS, ITEMS_BY_ID } from '../../data/index.js'
-import { buildPresetPrompt } from '../../utils/promptBuilder.js'
+import { buildPresetPrompt, MOTION_TOOLTIP_ANIM_MAP } from '../../utils/promptBuilder.js'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
 import MotionTooltip from './MotionTooltip.vue'
 
@@ -13,7 +13,7 @@ const {
   copyText
 } = useCatalogStore()
 
-const isCollapsed = ref(false)
+const isCollapsed = ref(true)
 
 const tooltipState = reactive({
   visible: false,
@@ -116,7 +116,7 @@ function showPresetFloorTip(fl, floorIndex, totalFloors, event) {
     tooltipState.title = `${motionItem.code} ${motionItem.name}`
     tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏 · ${shortLayoutName(fl.layoutId)}`
     tooltipState.tip = motionItem.shortPrompt
-    tooltipState.anim = MOTION_ID_TO_ANIM[fl.motionId] || 'scroll-enter'
+    tooltipState.anim = MOTION_TOOLTIP_ANIM_MAP[fl.motionId] || 'scroll-enter'
   } else if (layoutItem) {
     tooltipState.title = `${layoutItem.code} ${shortLayoutName(fl.layoutId)}`
     tooltipState.badge = `第 ${floorIndex + 1}/${totalFloors} 屏位置`
@@ -156,12 +156,26 @@ function handleCopyPreset(preset) {
 </script>
 
 <template>
-  <section class="preset-strip" aria-label="整页预设版式与动效套餐">
+  <section
+    class="preset-strip"
+    :class="{ 'is-collapsed': isCollapsed }"
+    aria-label="整页预设版式与动效套餐"
+  >
     <div class="strip-header">
-      <div class="strip-title-group">
+      <div
+        class="strip-title-group"
+        role="button"
+        tabindex="0"
+        :aria-expanded="!isCollapsed"
+        @click="isCollapsed = !isCollapsed"
+        @keydown.enter.prevent="isCollapsed = !isCollapsed"
+        @keydown.space.prevent="isCollapsed = !isCollapsed"
+      >
         <span class="strip-badge">⚡ 整页预设套餐</span>
         <h2 class="strip-title">一键套用现成版式 + 动效编排</h2>
-        <span class="strip-sub">鼠标指着蓝色动效词可看小动画，点预览直接看整页骨架</span>
+        <span class="strip-sub">
+          {{ isCollapsed ? '含标准 5 屏、AI 旗舰页等 4 套现成整页方案（点击展开）' : '鼠标指着楼层词可看动画与位置，点预览直接看整页骨架' }}
+        </span>
       </div>
 
       <div class="strip-header-actions">
@@ -175,9 +189,10 @@ function handleCopyPreset(preset) {
         <button
           type="button"
           class="collapse-btn"
+          :class="{ 'is-closed': isCollapsed }"
           @click="isCollapsed = !isCollapsed"
         >
-          {{ isCollapsed ? '展开 ▼' : '收起 ▲' }}
+          {{ isCollapsed ? '展开 4 套套餐 ▼' : '收起 ▲' }}
         </button>
       </div>
     </div>
@@ -245,9 +260,15 @@ function handleCopyPreset(preset) {
   background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
   border: 1px solid #dbeafe;
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  margin-bottom: 30px;
+  padding: 15px 18px;
+  margin-bottom: 24px;
   box-shadow: 0 4px 18px -6px rgba(37, 99, 235, 0.09);
+  transition: padding 0.18s ease, margin-bottom 0.18s ease;
+}
+
+.preset-strip.is-collapsed {
+  padding: 10px 16px;
+  margin-bottom: 18px;
 }
 
 .strip-header {
@@ -263,6 +284,7 @@ function handleCopyPreset(preset) {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
 }
 
 .strip-badge {
@@ -316,15 +338,22 @@ function handleCopyPreset(preset) {
   background: var(--surface);
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
+  font-weight: 600;
+  padding: 5px 11px;
   border-radius: 999px;
   cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.collapse-btn.is-closed {
+  border-color: #93c5fd;
+  background: var(--primary-soft);
+  color: var(--primary);
 }
 
 .collapse-btn:hover {
-  border-color: var(--border-strong);
-  color: var(--text);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .preset-grid {
