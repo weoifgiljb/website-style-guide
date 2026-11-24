@@ -127,8 +127,17 @@ defineProps({
 
       <!-- M-13 Seamless Channel Marquee -->
       <div v-if="players.hasMotion('M-13')" class="bp-marquee" :class="{ 'is-boost': players.isDemoActive }">
-        <div class="bp-marquee-track">
-          <span v-for="(ch, i) in [...players.MARQUEE_CHANNELS, ...players.MARQUEE_CHANNELS]" :key="i" class="bp-mq-chip">
+        <div
+          v-for="copy in 2"
+          :key="copy"
+          class="bp-marquee-group"
+          :aria-hidden="copy === 2 ? 'true' : undefined"
+        >
+          <span
+            v-for="(ch, i) in [...players.MARQUEE_CHANNELS, ...players.MARQUEE_CHANNELS]"
+            :key="`${copy}-${i}`"
+            class="bp-mq-chip"
+          >
             ● {{ ch }}
           </span>
         </div>
@@ -215,13 +224,17 @@ defineProps({
 
 /* M-13 Marquee */
 .bp-marquee {
-  overflow: hidden; padding: 5px 0; border-radius: 7px; background: var(--surface-soft);
-  border: 1px solid var(--border);
+  display: flex; overflow: hidden; min-width: 0; padding: 5px 0; border-radius: 7px;
+  background: var(--surface-soft); border: 1px solid var(--border);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
 }
-.bp-marquee-track { display: flex; width: max-content; gap: 14px; animation: bpMarquee 14s linear infinite; }
-.bp-marquee:hover .bp-marquee-track { animation-play-state: paused; }
+.bp-marquee-group {
+  display: flex; flex: 0 0 auto; align-items: center; gap: 14px;
+  min-width: 100%; padding-right: 14px;
+  animation: bpMarquee 28s linear infinite;
+}
+.bp-marquee:hover .bp-marquee-group { animation-play-state: paused; }
 .bp-marquee.is-boost { border-color: var(--primary); background: var(--primary-soft); }
 .bp-mq-chip { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
 
@@ -294,7 +307,7 @@ defineProps({
 
 @keyframes bpWordIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes bpBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes bpMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes bpMarquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 @keyframes bpPulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); } 75%, 100% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } }
 @keyframes bpFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 </style>
