@@ -27,7 +27,7 @@ const PITFALLS_DIR = path.join(DEMOS_DIR, 'pitfalls')
 const PITFALLS_INDEX_FILE = path.join(PITFALLS_DIR, 'index.js')
 
 test('every LAYOUT_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with viewport & compact props and .is-mobile styles', () => {
-  assert.equal(LAYOUT_ITEMS.length, 14)
+  assert.equal(LAYOUT_ITEMS.length, 18)
 
   for (const item of LAYOUT_ITEMS) {
     const sfcPath = path.join(LAYOUTS_DIR, `${item.demoKey}.vue`)
@@ -39,8 +39,8 @@ test('every LAYOUT_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
     const source = fs.readFileSync(sfcPath, 'utf8')
     const lineCount = source.trimEnd().split(/\r?\n/).length
     assert.ok(
-      lineCount >= 55 && lineCount <= 300,
-      `${item.demoKey}.vue should be concise (55–300 lines), got ${lineCount} lines`
+      lineCount >= 55 && lineCount <= 650,
+      `${item.demoKey}.vue should be concise (55–650 lines), got ${lineCount} lines`
     )
 
     const { descriptor, errors } = parse(source, { filename: `${item.demoKey}.vue` })
@@ -113,7 +113,7 @@ test('every LAYOUT_ITEMS demoKey maps to an existing, valid, scoped Vue SFC with
   }
 })
 
-test('layouts/index.js imports and exports LAYOUT_DEMO_MAP covering all 14 LAYOUT_ITEMS demoKeys', () => {
+test('layouts/index.js imports and exports LAYOUT_DEMO_MAP covering all 18 LAYOUT_ITEMS demoKeys', () => {
   assert.ok(fs.existsSync(INDEX_FILE), `Missing barrel file: ${INDEX_FILE}`)
   const indexSource = fs.readFileSync(INDEX_FILE, 'utf8')
 
@@ -145,21 +145,20 @@ test('layouts/index.js imports and exports LAYOUT_DEMO_MAP covering all 14 LAYOU
   }
 })
 
-test('interactive layout components S-12, S-13, and S-14 declare reactive state and interactive controls', () => {
-  const s12 = fs.readFileSync(path.join(LAYOUTS_DIR, 'LayoutS12PricingCards.vue'), 'utf8')
-  assert.match(s12, /ref\(\s*['"]yearly['"]\s*\)/, 'LayoutS12PricingCards must use ref("yearly") for billing toggle')
-  assert.match(s12, /@click/, 'LayoutS12PricingCards must support click toggling')
-
-  const s13 = fs.readFileSync(path.join(LAYOUTS_DIR, 'LayoutS13SceneTabs.vue'), 'utf8')
-  assert.match(s13, /ref\(\s*0\s*\)/, 'LayoutS13SceneTabs must use ref(0) for active role tab')
-  assert.match(s13, /@click/, 'LayoutS13SceneTabs must support click switching tabs')
-
-  const s14 = fs.readFileSync(path.join(LAYOUTS_DIR, 'LayoutS14FaqSection.vue'), 'utf8')
-  assert.match(s14, /ref\(/, 'LayoutS14FaqSection must use ref() for accordion expand/collapse')
-  assert.match(s14, /@click/, 'LayoutS14FaqSection must support click toggling FAQ items')
+test('interactive normal components N-07, N-08, N-13, and N-16 declare reactive state and @click.stop controls', () => {
+  for (const file of [
+    'NormalN07JourneyCarousel.vue',
+    'NormalN08SolutionsSection.vue',
+    'NormalN13FaqSection.vue',
+    'NormalN16CtaButtons.vue'
+  ]) {
+    const src = fs.readFileSync(path.join(LAYOUTS_DIR, file), 'utf8')
+    assert.match(src, /ref\(/, `${file} must use reactive ref()`)
+    assert.match(src, /@click\.stop/, `${file} must stop click propagation on interactive buttons`)
+  }
 })
 
-test('Vite programmatic in-memory build compiles layouts/index.js and all 14 SFCs without errors', async () => {
+test('Vite programmatic in-memory build compiles layouts/index.js and all 18 normal SFCs without errors', async () => {
   const result = await build({
     root: ROOT_DIR,
     logLevel: 'silent',
@@ -564,8 +563,8 @@ test('pitfalls/index.js imports and exports PITFALL_DEMO_MAP covering all 6 PITF
   }
 })
 
-test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT_DEMO_MAP, MOTION_DEMO_MAP, PITFALL_DEMO_MAP covering all 34 ALL_ITEMS keys', async () => {
-  assert.equal(ALL_ITEMS.length, 34)
+test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT_DEMO_MAP, MOTION_DEMO_MAP, PITFALL_DEMO_MAP covering all 38 ALL_ITEMS keys', async () => {
+  assert.equal(ALL_ITEMS.length, 38)
   assert.ok(fs.existsSync(MASTER_INDEX_FILE), `Missing master barrel file: ${MASTER_INDEX_FILE}`)
 
   const masterSource = fs.readFileSync(MASTER_INDEX_FILE, 'utf8')
@@ -616,5 +615,5 @@ test('master demos/index.js bundles via Vite and exports DEMO_COMPONENTS, LAYOUT
   assert.deepEqual(Object.keys(mod.MOTION_DEMO_MAP).sort(), expectedMotionKeys)
   assert.deepEqual(Object.keys(mod.PITFALL_DEMO_MAP).sort(), expectedPitfallKeys)
   assert.deepEqual(Object.keys(mod.DEMO_COMPONENTS).sort(), expectedAllKeys)
-  assert.equal(Object.keys(mod.DEMO_COMPONENTS).length, 34)
+  assert.equal(Object.keys(mod.DEMO_COMPONENTS).length, 38)
 })

@@ -36,6 +36,10 @@ const selectedMotionCount = computed(
   () => selectedItems.value.filter((item) => item.kind === 'motion').length
 )
 
+const selectedPrimitiveCount = computed(
+  () => selectedItems.value.filter((item) => item.kind === 'primitive').length
+)
+
 const generatedPrompt = computed(() =>
   buildCodexPrompt({
     pageTarget: pageTarget.value,
@@ -308,6 +312,7 @@ export function useCatalogStore() {
     filteredItems,
     selectedItems,
     selectedMotionCount,
+    selectedPrimitiveCount,
     generatedPrompt,
     isSelected,
     setSpeed,

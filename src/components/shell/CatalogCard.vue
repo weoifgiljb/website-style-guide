@@ -77,10 +77,14 @@ function setLocalViewport(vp) {
       class="stage"
       :class="{
         'style-stage': item.kind === 'style',
+        'primitive-stage': item.kind === 'primitive',
         'pitfall-stage': item.kind === 'pitfall'
       }"
     >
-      <span v-if="item.kind === 'style' && item.badge" class="stage-badge">
+      <span
+        v-if="(item.kind === 'style' || item.kind === 'primitive') && item.badge"
+        class="stage-badge"
+      >
         {{ item.badge }}
       </span>
       <div
@@ -100,6 +104,11 @@ function setLocalViewport(vp) {
     </div>
 
     <div class="card-body">
+      <div v-if="item.normalPath" class="meta-row">
+        <span class="meta-label is-code">normal</span>
+        <code class="normal-path">{{ item.normalPath }}</code>
+      </div>
+
       <div class="meta-row">
         <span class="meta-label">场景</span>
         <span class="meta-val">{{ item.scene }}</span>
@@ -171,6 +180,12 @@ function setLocalViewport(vp) {
   color: #047857;
   background: var(--accent-soft);
   border: 1px solid #a7f3d0;
+}
+
+.card-code.kind-primitive {
+  color: #1d4ed8;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
 }
 
 .card-code.kind-motion {
@@ -285,6 +300,10 @@ function setLocalViewport(vp) {
   background: linear-gradient(135deg, #f8fafc 0%, #ecfdf5 100%);
 }
 
+.stage.primitive-stage {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+}
+
 .stage.pitfall-stage {
   background: linear-gradient(135deg, #f8fafc 0%, #fff7ed 100%);
 }
@@ -344,6 +363,25 @@ function setLocalViewport(vp) {
   background: var(--surface-soft);
   padding: 1px 6px;
   border-radius: 4px;
+}
+
+.meta-label.is-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+}
+
+.normal-path {
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: #1e40af;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1px 6px;
+  border-radius: 5px;
+  word-break: break-all;
 }
 
 .meta-val {

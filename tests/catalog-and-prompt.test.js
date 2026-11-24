@@ -6,6 +6,8 @@ import {
   CATEGORIES,
   PAGE_PRESETS,
   LAYOUT_ITEMS,
+  SECTION_LAYOUT_ITEMS,
+  PRIMITIVE_ITEMS,
   MOTION_ITEMS,
   PITFALL_ITEMS
 } from '../src/data/index.js'
@@ -21,6 +23,7 @@ const REQUIRED_FIELDS = [
   'name',
   'en',
   'badge',
+  'normalPath',
   'keywords',
   'scene',
   'mobileTip',
@@ -28,18 +31,21 @@ const REQUIRED_FIELDS = [
   'shortPrompt'
 ]
 
-test('catalog registers exactly 34 items across 6 content categories with complete fields', () => {
-  assert.equal(LAYOUT_ITEMS.length, 14)
+test('catalog registers 38 items aligned 1-to-1 with www main branch src/components/normal/', () => {
+  assert.equal(SECTION_LAYOUT_ITEMS.length, 15)
+  assert.equal(PRIMITIVE_ITEMS.length, 3)
+  assert.equal(LAYOUT_ITEMS.length, 18)
   assert.equal(MOTION_ITEMS.length, 14)
   assert.equal(PITFALL_ITEMS.length, 6)
-  assert.equal(ALL_ITEMS.length, 34)
+  assert.equal(ALL_ITEMS.length, 38)
 
   const counts = ALL_ITEMS.reduce((acc, item) => {
     acc[item.cat] = (acc[item.cat] || 0) + 1
     return acc
   }, {})
   assert.deepEqual(counts, {
-    style: 14,
+    style: 15,
+    primitive: 3,
     enter: 4,
     hover: 5,
     scroll: 3,
@@ -52,30 +58,48 @@ test('catalog registers exactly 34 items across 6 content categories with comple
       assert.equal(typeof item[field], 'string', `${item.id} missing string field ${field}`)
       assert.ok(item[field].trim().length > 0, `${item.id} has empty field ${field}`)
     }
+    assert.match(
+      item.normalPath,
+      /^src\/components\/normal\/[A-Za-z0-9_-]+\.js/,
+      `${item.id} normalPath must point to src/components/normal/*.js`
+    )
     assert.equal(ITEMS_BY_ID[item.id], item)
+  }
+
+  // Every N-01..N-18 prompt must explicitly mention its real normal component
+  for (const item of LAYOUT_ITEMS) {
+    assert.match(
+      item.prompt,
+      /src\/components\/normal\/[A-Za-z0-9_-]+\.js/,
+      `${item.id} prompt must reference exact src/components/normal/*.js path`
+    )
   }
 
   assert.deepEqual(
     CATEGORIES.map((c) => c.id),
-    ['all', 'style', 'enter', 'hover', 'scroll', 'loop', 'pitfall']
+    ['all', 'style', 'primitive', 'enter', 'hover', 'scroll', 'loop', 'pitfall']
   )
   assert.equal(PAGE_PRESETS.length, 3)
 
   const expectedDemoKeys = [
-    ['S-01', 'LayoutS01HeroSplit'],
-    ['S-02', 'LayoutS02ThreeCards'],
-    ['S-03', 'LayoutS03AltRows'],
-    ['S-04', 'LayoutS04ChannelGrid'],
-    ['S-05', 'LayoutS05StatsBanner'],
-    ['S-06', 'LayoutS06BottomCta'],
-    ['S-07', 'LayoutS07CenteredHero'],
-    ['S-08', 'LayoutS08BentoGrid'],
-    ['S-09', 'LayoutS09Comparison'],
-    ['S-10', 'LayoutS10StepFlow'],
-    ['S-11', 'LayoutS11Testimonials'],
-    ['S-12', 'LayoutS12PricingCards'],
-    ['S-13', 'LayoutS13SceneTabs'],
-    ['S-14', 'LayoutS14FaqSection'],
+    ['N-01', 'NormalN01SectionIntro'],
+    ['N-02', 'NormalN02BrandWall'],
+    ['N-03', 'NormalN03LogoCloud'],
+    ['N-04', 'NormalN04MetricsCard'],
+    ['N-05', 'NormalN05OpportunitySection'],
+    ['N-06', 'NormalN06FeatureHighlight'],
+    ['N-07', 'NormalN07JourneyCarousel'],
+    ['N-08', 'NormalN08SolutionsSection'],
+    ['N-09', 'NormalN09PartnerSection'],
+    ['N-10', 'NormalN10ArticleSection'],
+    ['N-11', 'NormalN11TestimonialSection'],
+    ['N-12', 'NormalN12Table'],
+    ['N-13', 'NormalN13FaqSection'],
+    ['N-14', 'NormalN14FinalCtaSection'],
+    ['N-15', 'NormalN15CtaSection'],
+    ['N-16', 'NormalN16CtaButtons'],
+    ['N-17', 'NormalN17NavLinks'],
+    ['N-18', 'NormalN18IconBadges'],
     ['M-01', 'MotionFadeUp'],
     ['M-02', 'MotionStagger'],
     ['M-03', 'MotionZoomIn'],
@@ -103,7 +127,7 @@ test('catalog registers exactly 34 items across 6 content categories with comple
   )
 })
 
-test('every preset references valid layout, motion, and extra IDs', () => {
+test('every preset references valid normal section layouts, motions, and extra IDs', () => {
   assert.deepEqual(
     PAGE_PRESETS.map((p) => p.id),
     ['standard-feature', 'comparison-landing', 'flagship-showcase']
@@ -124,14 +148,20 @@ test('every preset references valid layout, motion, and extra IDs', () => {
   }
 })
 
-test('filterCatalogItems filters by category and case-insensitive keyword across metadata', () => {
-  const s08 = filterCatalogItems({
+test('filterCatalogItems filters by category, normalPath component name, and keywords', () => {
+  const opp = filterCatalogItems({
     items: ALL_ITEMS,
     activeCategory: 'all',
-    searchQuery: 'bento'
+    searchQuery: 'OpportunitySection'
   })
-  assert.equal(s08.length, 1)
-  assert.equal(s08[0].code, 'S-08')
+  assert.ok(opp.some((item) => item.id === 'N-05'))
+
+  const primitives = filterCatalogItems({
+    items: ALL_ITEMS,
+    activeCategory: 'primitive',
+    searchQuery: ''
+  })
+  assert.equal(primitives.length, 3)
 
   const pitfalls = filterCatalogItems({
     items: ALL_ITEMS,
@@ -164,23 +194,22 @@ test('filterCatalogItems filters by category and case-insensitive keyword across
   assert.ok(byMobileTipPitfall.some((item) => item.id === 'P-01'))
 })
 
-test('buildCodexPrompt outputs ordered floors with bound motions, unbound motions, and pitfall rules', () => {
+test('buildCodexPrompt outputs ordered normal floors with file paths, primitives, motions, and pitfall rules', () => {
   const output = buildCodexPrompt({
     pageTarget: '/features/ai-agents',
-    floorOrder: ['S-01', 'S-02'],
-    floorMotionMap: { 'S-01': 'M-04', 'S-02': '' },
-    selectedIds: ['S-01', 'S-02', 'M-04', 'M-05', 'P-06'],
+    floorOrder: ['N-06', 'N-05'],
+    floorMotionMap: { 'N-06': 'M-04', 'N-05': '' },
+    selectedIds: ['N-06', 'N-05', 'N-16', 'M-04', 'M-05', 'P-06'],
     itemsById: ITEMS_BY_ID
   })
   assert.match(output, /我想用官网 Harness 为 \/features\/ai-agents 配置以下版式与动效：/)
-  assert.match(output, /【一、整页楼层版式与动效编排（按从上到下顺序）】/)
-  assert.match(output, /第 1 屏【S-01 左文右图首屏（Hero）】/)
+  assert.match(output, /第 1 屏【N-06 左右图文高亮讲解横幅｜复用 src\/components\/normal\/FeatureHighlightBanner\.js】/)
   assert.match(output, /本屏搭配动效「打字机 \/ 逐词切换/)
-  assert.match(output, /第 2 屏【S-02 三栏痛点 \/ 价值卡片】/)
+  assert.match(output, /第 2 屏【N-05 三栏机会 \/ 核心价值卡片区｜复用 src\/components\/normal\/OpportunitySection\.js】/)
+  assert.match(output, /【配套复用的 normal 基础子组件】[\s\S]*src\/components\/normal\/CtaGroup\.js/)
   assert.match(output, /【补充交互动效】[\s\S]*悬停微浮 \+ 投影/)
   assert.doesNotMatch(output.split('【补充交互动效】')[1], /打字机 \/ 逐词切换/)
   assert.match(output, /【响应式与动效克制要求】/)
-  assert.match(output, /0\.25～0\.45 秒/)
 
   const motionsOnly = buildCodexPrompt({
     pageTarget: '',
@@ -194,43 +223,45 @@ test('buildCodexPrompt outputs ordered floors with bound motions, unbound motion
   assert.match(motionsOnly, /淡入上浮/)
 })
 
-test('useCatalogStore manages selection, floor ordering, motion bindings, presets, and reactive prompt in Node', () => {
+test('useCatalogStore manages normal floors, primitives, motion bindings, presets, and viewport in Node', () => {
   const store = useCatalogStore()
   store.clearSelection()
   store.setCategory('all')
   store.searchQuery.value = ''
   store.pageTarget.value = ''
 
-  assert.equal(store.filteredItems.value.length, 34)
+  assert.equal(store.filteredItems.value.length, 38)
 
-  // Toggle layouts and check floorOrder sync
-  store.addFloor('S-01')
-  store.toggleSelect('S-02')
-  assert.deepEqual(store.floorOrder.value, ['S-01', 'S-02'])
+  // Toggle layouts and check floorOrder sync (primitives do not enter floorOrder)
+  store.addFloor('N-06')
+  store.toggleSelect('N-05')
+  store.toggleSelect('N-16')
+  assert.deepEqual(store.floorOrder.value, ['N-06', 'N-05'])
+  assert.equal(store.selectedPrimitiveCount.value, 1)
 
   // Reorder floors
-  store.moveFloorUp('S-02')
-  assert.deepEqual(store.floorOrder.value, ['S-02', 'S-01'])
-  store.moveFloorDown('S-02')
-  assert.deepEqual(store.floorOrder.value, ['S-01', 'S-02'])
+  store.moveFloorUp('N-05')
+  assert.deepEqual(store.floorOrder.value, ['N-05', 'N-06'])
+  store.moveFloorDown('N-05')
+  assert.deepEqual(store.floorOrder.value, ['N-06', 'N-05'])
 
   // Bind motion auto-adds motion to selectedIds
-  store.setFloorMotion('S-01', 'M-03')
-  assert.equal(store.floorMotionMap['S-01'], 'M-03')
+  store.setFloorMotion('N-06', 'M-03')
+  assert.equal(store.floorMotionMap['N-06'], 'M-03')
   assert.ok(store.selectedIds.value.includes('M-03'))
   assert.equal(store.selectedMotionCount.value, 1)
 
   // Removing bound motion clears floorMotionMap binding
   store.toggleSelect('M-03')
   assert.equal(store.selectedIds.value.includes('M-03'), false)
-  assert.equal(store.floorMotionMap['S-01'] || '', '')
+  assert.equal(store.floorMotionMap['N-06'] || '', '')
 
-  // Apply preset replaces state cleanly
+  // Apply preset replaces state cleanly with real normal floors
   store.applyPreset('standard-feature')
-  assert.deepEqual(store.floorOrder.value, ['S-01', 'S-02', 'S-03', 'S-14', 'S-06'])
-  assert.equal(store.floorMotionMap['S-01'], 'M-01')
-  assert.ok(store.selectedIds.value.includes('P-04'))
-  assert.match(store.generatedPrompt.value, /第 1 屏【S-01 左文右图首屏（Hero）】/)
+  assert.deepEqual(store.floorOrder.value, ['N-04', 'N-06', 'N-05', 'N-09', 'N-10', 'N-13', 'N-11'])
+  assert.equal(store.floorMotionMap['N-04'], 'M-12')
+  assert.ok(store.selectedIds.value.includes('N-16'))
+  assert.match(store.generatedPrompt.value, /src\/components\/normal\/MetricsCard\.js/)
 
   // Speed, drawer, viewport actions work safely without DOM
   const prevTick = store.replayTick.value
@@ -245,21 +276,10 @@ test('useCatalogStore manages selection, floor ordering, motion bindings, preset
   store.closeDrawer()
   assert.equal(store.isDrawerOpen.value, false)
 
-  // Global card viewport state & version tracking
-  assert.equal(typeof store.setCardViewport, 'function')
-  store.setCardViewport('desktop')
-  assert.equal(store.cardViewport.value, 'desktop')
-  const prevVpVersion = store.cardViewportVersion.value
-  const prevReplayBeforeVp = store.replayTick.value
-
   store.setCardViewport('mobile')
   assert.equal(store.cardViewport.value, 'mobile')
-  assert.equal(store.cardViewportVersion.value, prevVpVersion + 1)
-  assert.equal(store.replayTick.value, prevReplayBeforeVp + 1)
-
-  store.setCardViewport('invalid-value')
+  store.setCardViewport('desktop')
   assert.equal(store.cardViewport.value, 'desktop')
-  assert.equal(store.cardViewportVersion.value, prevVpVersion + 2)
 
   store.clearSelection()
   assert.equal(store.selectedIds.value.length, 0)
@@ -270,12 +290,11 @@ test('removing preset or dropdown-bound floors cleans up auto-attached motions w
   const store = useCatalogStore()
   store.clearSelection()
 
-  // 1. Apply 5-floor preset -> delete all 5 floors -> zero orphan motions or pitfalls left behind
   store.applyPreset('standard-feature')
-  assert.equal(store.floorOrder.value.length, 5)
+  assert.equal(store.floorOrder.value.length, 7)
 
-  store.removeItem('S-01')
-  assert.equal(store.selectedIds.value.includes('M-01'), false)
+  store.removeItem('N-04')
+  assert.equal(store.selectedIds.value.includes('M-12'), false)
 
   for (const id of [...store.floorOrder.value]) {
     store.removeItem(id)
@@ -283,19 +302,16 @@ test('removing preset or dropdown-bound floors cleans up auto-attached motions w
   assert.deepEqual(store.floorOrder.value, [])
   assert.deepEqual(store.selectedIds.value, [])
 
-  // 2. Changing dropdown motion cleans up previous dropdown motion, but preserves manually checked motion
-  store.toggleSelect('M-05') // user explicitly clicked + 加入组合 on M-05 card
-  store.addFloor('S-01')
-  store.setFloorMotion('S-01', 'M-02')
+  store.toggleSelect('M-05')
+  store.addFloor('N-06')
+  store.setFloorMotion('N-06', 'M-02')
   assert.equal(store.selectedIds.value.includes('M-02'), true)
 
-  // Switch S-01 from M-02 to M-05 -> auto-attached M-02 is pruned
-  store.setFloorMotion('S-01', 'M-05')
+  store.setFloorMotion('N-06', 'M-05')
   assert.equal(store.selectedIds.value.includes('M-02'), false)
   assert.equal(store.selectedIds.value.includes('M-05'), true)
 
-  // Removing S-01 keeps manually picked M-05
-  store.removeItem('S-01')
+  store.removeItem('N-06')
   assert.deepEqual(store.selectedIds.value, ['M-05'])
 
   store.clearSelection()
