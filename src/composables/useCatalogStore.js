@@ -7,6 +7,7 @@ const replayTick = ref(0)
 const activeCategory = ref('all')
 const searchQuery = ref('')
 const selectedIds = ref([])
+const manualSelectedIds = new Set()
 const floorOrder = ref([])
 const floorMotionMap = reactive({})
 const pageTarget = ref('')
@@ -76,16 +77,49 @@ function isSelected(itemId) {
   return selectedIds.value.includes(itemId)
 }
 
+function isMotionBoundAnywhere(motionId) {
+  if (!motionId) return false
+  return floorOrder.value.some((layoutId) => floorMotionMap[layoutId] === motionId)
+}
+
+function pruneAutoAttachedItems(candidateMotionId = '') {
+  const toRemove = new Set()
+
+  if (
+    candidateMotionId &&
+    !manualSelectedIds.has(candidateMotionId) &&
+    !isMotionBoundAnywhere(candidateMotionId)
+  ) {
+    toRemove.add(candidateMotionId)
+  }
+
+  // When all layout floors are removed, clean up any non-manual items (such as preset-only pitfalls/motions)
+  if (floorOrder.value.length === 0) {
+    selectedIds.value.forEach((id) => {
+      if (!manualSelectedIds.has(id)) {
+        toRemove.add(id)
+      }
+    })
+  }
+
+  if (toRemove.size > 0) {
+    selectedIds.value = selectedIds.value.filter((id) => !toRemove.has(id))
+  }
+}
+
 function toggleSelect(itemId) {
   const item = ITEMS_BY_ID[itemId]
   if (!item) return
 
   const existingIdx = selectedIds.value.indexOf(itemId)
   if (existingIdx !== -1) {
+    manualSelectedIds.delete(itemId)
     selectedIds.value = selectedIds.value.filter((id) => id !== itemId)
     if (item.kind === 'style') {
+      const prevMotion = floorMotionMap[itemId] || ''
       floorOrder.value = floorOrder.value.filter((id) => id !== itemId)
       delete floorMotionMap[itemId]
+      pruneAutoAttachedItems(prevMotion)
     } else if (item.kind === 'motion') {
       Object.keys(floorMotionMap).forEach((layoutId) => {
         if (floorMotionMap[layoutId] === itemId) {
@@ -94,6 +128,7 @@ function toggleSelect(itemId) {
       })
     }
   } else {
+    manualSelectedIds.add(itemId)
     selectedIds.value = [...selectedIds.value, itemId]
     if (item.kind === 'style' && !floorOrder.value.includes(itemId)) {
       floorOrder.value = [...floorOrder.value, itemId]
@@ -111,6 +146,7 @@ function addFloor(layoutId) {
   const item = ITEMS_BY_ID[layoutId]
   if (!item || item.kind !== 'style') return
 
+  manualSelectedIds.add(layoutId)
   if (!selectedIds.value.includes(layoutId)) {
     selectedIds.value = [...selectedIds.value, layoutId]
   }
@@ -136,6 +172,7 @@ function moveFloorDown(layoutId) {
 }
 
 function setFloorMotion(layoutId, motionId) {
+  const prevMotion = floorMotionMap[layoutId] || ''
   const normalized = motionId || ''
   floorMotionMap[layoutId] = normalized
   if (
@@ -146,12 +183,16 @@ function setFloorMotion(layoutId, motionId) {
   ) {
     selectedIds.value = [...selectedIds.value, normalized]
   }
+  if (prevMotion && prevMotion !== normalized) {
+    pruneAutoAttachedItems(prevMotion)
+  }
 }
 
 function applyPreset(presetId) {
   const preset = PAGE_PRESETS.find((p) => p.id === presetId)
   if (!preset) return
 
+  manualSelectedIds.clear()
   Object.keys(floorMotionMap).forEach((key) => {
     delete floorMotionMap[key]
   })
@@ -190,6 +231,7 @@ function applyPreset(presetId) {
 }
 
 function clearSelection() {
+  manualSelectedIds.clear()
   selectedIds.value = []
   floorOrder.value = []
   Object.keys(floorMotionMap).forEach((key) => {

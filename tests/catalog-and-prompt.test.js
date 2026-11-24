@@ -265,3 +265,38 @@ test('useCatalogStore manages selection, floor ordering, motion bindings, preset
   assert.equal(store.selectedIds.value.length, 0)
   assert.equal(store.floorOrder.value.length, 0)
 })
+
+test('removing preset or dropdown-bound floors cleans up auto-attached motions while preserving manually picked motions', () => {
+  const store = useCatalogStore()
+  store.clearSelection()
+
+  // 1. Apply 5-floor preset -> delete all 5 floors -> zero orphan motions or pitfalls left behind
+  store.applyPreset('standard-feature')
+  assert.equal(store.floorOrder.value.length, 5)
+
+  store.removeItem('S-01')
+  assert.equal(store.selectedIds.value.includes('M-01'), false)
+
+  for (const id of [...store.floorOrder.value]) {
+    store.removeItem(id)
+  }
+  assert.deepEqual(store.floorOrder.value, [])
+  assert.deepEqual(store.selectedIds.value, [])
+
+  // 2. Changing dropdown motion cleans up previous dropdown motion, but preserves manually checked motion
+  store.toggleSelect('M-05') // user explicitly clicked + 加入组合 on M-05 card
+  store.addFloor('S-01')
+  store.setFloorMotion('S-01', 'M-02')
+  assert.equal(store.selectedIds.value.includes('M-02'), true)
+
+  // Switch S-01 from M-02 to M-05 -> auto-attached M-02 is pruned
+  store.setFloorMotion('S-01', 'M-05')
+  assert.equal(store.selectedIds.value.includes('M-02'), false)
+  assert.equal(store.selectedIds.value.includes('M-05'), true)
+
+  // Removing S-01 keeps manually picked M-05
+  store.removeItem('S-01')
+  assert.deepEqual(store.selectedIds.value, ['M-05'])
+
+  store.clearSelection()
+})

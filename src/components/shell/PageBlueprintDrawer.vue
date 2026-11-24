@@ -24,6 +24,7 @@ const {
   setFloorMotion,
   addFloor,
   applyPreset,
+  clearSelection,
   closeDrawer,
   setPreviewViewport,
   copyText
@@ -92,6 +93,11 @@ function handleAddFloorSelect(event) {
 function handleApplyPreset(presetId) {
   applyPreset(presetId)
   previewReplayKey.value += 1
+}
+
+function clearUnboundMotions() {
+  const ids = unboundSelectedMotions.value.map((item) => item.id)
+  ids.forEach((id) => removeItem(id))
 }
 
 function handleCanvasScroll(event) {
@@ -190,6 +196,14 @@ onUnmounted(() => {
           <div class="field-block floors-block">
             <div class="field-header">
               <span class="field-label">② 页面楼层顺序与本屏动效（{{ floorOrder.length }} 屏）</span>
+              <button
+                v-if="selectedItems.length > 0 || floorOrder.length > 0"
+                type="button"
+                class="clear-drawer-btn"
+                @click="clearSelection()"
+              >
+                清空重选
+              </button>
             </div>
 
             <div v-if="floorOrder.length === 0" class="empty-floors">
@@ -428,7 +442,14 @@ onUnmounted(() => {
                   class="standalone-motions-section"
                 >
                   <div class="standalone-motions-head">
-                    ✨ 已选独立动效实时预览（可在左侧绑定到具体楼层）
+                    <span>✨ 已选独立动效实时预览（可在左侧绑定到具体楼层）</span>
+                    <button
+                      type="button"
+                      class="clear-unbound-btn"
+                      @click="clearUnboundMotions()"
+                    >
+                      清空独立动效
+                    </button>
                   </div>
                   <div
                     class="standalone-motions-grid"
@@ -443,6 +464,15 @@ onUnmounted(() => {
                         <span class="standalone-motion-code">{{ m.code }}</span>
                         <span class="standalone-motion-name">{{ m.name }}</span>
                         <span class="standalone-motion-en">{{ m.en }}</span>
+                        <button
+                          type="button"
+                          class="icon-btn danger standalone-remove-btn"
+                          :title="'移除 ' + m.name"
+                          :aria-label="'移除 ' + m.name"
+                          @click="removeItem(m.id)"
+                        >
+                          ✕
+                        </button>
                       </div>
                       <div class="stage">
                         <component
@@ -590,10 +620,35 @@ onUnmounted(() => {
   gap: 8px;
 }
 
+.field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .field-label {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--text);
+}
+
+.clear-drawer-btn,
+.clear-unbound-btn {
+  border: 1px solid #fca5a5;
+  background: #ffffff;
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.clear-drawer-btn:hover,
+.clear-unbound-btn:hover {
+  background: var(--danger-soft);
 }
 
 .target-input,
@@ -1031,6 +1086,10 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 700;
   color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .standalone-motions-grid {
@@ -1081,6 +1140,12 @@ onUnmounted(() => {
   font-size: 10.5px;
   color: var(--text-muted);
   margin-left: auto;
+}
+
+.standalone-remove-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
 }
 
 .standalone-motion-card .stage {
