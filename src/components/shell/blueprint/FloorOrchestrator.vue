@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { ArrowUp, ArrowDown, X } from 'lucide-vue-next'
 import { LAYOUT_ITEMS, ITEMS_BY_ID } from '../../../data/index.js'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 import FloorMotionPicker from './FloorMotionPicker.vue'
@@ -101,27 +102,30 @@ function handleAddFloorSelect(event) {
                       type="button"
                       class="icon-btn"
                       title="上移一屏"
+                      aria-label="上移一屏"
                       :disabled="idx === 0"
                       @click="moveFloorUp(layoutId)"
                     >
-                      ↑
+                      <ArrowUp :size="13" :stroke-width="2" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       class="icon-btn"
                       title="下移一屏"
+                      aria-label="下移一屏"
                       :disabled="idx === floorOrder.length - 1"
                       @click="moveFloorDown(layoutId)"
                     >
-                      ↓
+                      <ArrowDown :size="13" :stroke-width="2" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       class="icon-btn danger"
                       title="移除该楼层"
+                      aria-label="移除该楼层"
                       @click="removeItem(layoutId)"
                     >
-                      ✕
+                      <X :size="13" :stroke-width="2" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

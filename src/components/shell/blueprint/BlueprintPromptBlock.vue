@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { Copy, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
 const { generatedPrompt, copyText } = useCatalogStore()
@@ -15,7 +16,9 @@ const isPromptExpanded = ref(true)
                 class="toggle-prompt-btn"
                 @click="isPromptExpanded = !isPromptExpanded"
               >
-                {{ isPromptExpanded ? '收起预览 ▲' : '展开预览 ▼' }}
+                <span>{{ isPromptExpanded ? '收起预览' : '展开预览' }}</span>
+                <ChevronUp v-if="isPromptExpanded" :size="13" :stroke-width="2" aria-hidden="true" />
+                <ChevronDown v-else :size="13" :stroke-width="2" aria-hidden="true" />
               </button>
             </div>
             <textarea
@@ -30,7 +33,8 @@ const isPromptExpanded = ref(true)
               class="btn-primary copy-full-btn"
               @click="copyText(generatedPrompt, '已复制完整楼层话术')"
             >
-              📋 一键复制完整楼层话术
+              <Copy :size="14" :stroke-width="1.8" aria-hidden="true" />
+              <span>一键复制完整楼层话术</span>
             </button>
           </div>
 </template>
@@ -67,6 +71,9 @@ const isPromptExpanded = ref(true)
 }
 
 .toggle-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   border: none;
   background: transparent;
   color: var(--primary);

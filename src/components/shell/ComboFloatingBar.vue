@@ -1,4 +1,5 @@
 <script setup>
+import { X, Layers, Copy } from 'lucide-vue-next'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
 
 const {
@@ -26,7 +27,7 @@ const {
           已选 {{ selectedIds.length }} 项（{{ floorOrder.length }} 个版式楼层 · {{ selectedMotionCount }} 个动效）
         </span>
         <span v-if="selectedMotionCount > 3" class="combo-warn">
-          （建议单页重点动效控制在 1～3 个以内，更显克制）
+          建议单页重点动效控制在 1～3 个以内
         </span>
       </div>
 
@@ -43,7 +44,7 @@ const {
             :aria-label="'移除 ' + item.name"
             @click="removeItem(item.id)"
           >
-            ×
+            <X :size="12" :stroke-width="2" aria-hidden="true" />
           </button>
         </span>
       </div>
@@ -54,14 +55,16 @@ const {
         清空
       </button>
       <button type="button" class="btn-blueprint" @click="openDrawer()">
-        🧩 预览整页骨架
+        <Layers :size="14" :stroke-width="1.8" aria-hidden="true" />
+        <span>预览整页骨架</span>
       </button>
       <button
         type="button"
         class="btn-primary"
         @click="copyText(generatedPrompt, '已复制 ' + selectedIds.length + ' 项组合需求话术')"
       >
-        一键复制给 Codex 话术
+        <Copy :size="14" :stroke-width="1.8" aria-hidden="true" />
+        <span>一键复制给 Codex 话术</span>
       </button>
     </div>
   </div>
@@ -78,20 +81,23 @@ const {
   pointer-events: none;
   z-index: 40;
   width: min(920px, calc(100% - 28px));
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 12px 16px;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.36);
+  box-shadow: 0 20px 40px -8px rgba(15, 23, 42, 0.36);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
   transition:
-    transform 0.3s var(--ease),
-    opacity 0.25s ease,
-    visibility 0s linear 0.3s;
+    transform 0.28s var(--ease),
+    opacity 0.22s ease,
+    visibility 0s linear 0.28s;
 }
 
 .combo-bar.show {
@@ -100,8 +106,8 @@ const {
   visibility: visible;
   pointer-events: auto;
   transition:
-    transform 0.3s var(--ease),
-    opacity 0.25s ease,
+    transform 0.28s var(--ease),
+    opacity 0.22s ease,
     visibility 0s linear 0s;
 }
 
@@ -114,12 +120,12 @@ const {
 }
 
 .combo-title {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .combo-warn {
@@ -131,7 +137,7 @@ const {
 .combo-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   max-height: 58px;
   overflow-y: auto;
 }
@@ -139,11 +145,12 @@ const {
 .combo-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-size: 11.5px;
-  background: rgba(255, 255, 255, 0.14);
-  padding: 2px 8px;
-  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 6px 2px 8px;
+  border-radius: 6px;
   color: #f8fafc;
 }
 
@@ -151,14 +158,20 @@ const {
   border: none;
   background: transparent;
   color: #94a3b8;
-  font-size: 13px;
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.16s ease, background 0.16s ease;
 }
 
 .tag-remove:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .combo-actions {
@@ -169,20 +182,22 @@ const {
 }
 
 .btn-blueprint {
-  border: 1px solid rgba(96, 165, 250, 0.55);
-  background: rgba(37, 99, 235, 0.22);
-  color: #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
   padding: 7px 13px;
-  border-radius: 9px;
+  border-radius: 8px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .btn-blueprint:hover {
-  background: rgba(37, 99, 235, 0.38);
-  border-color: #93c5fd;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.36);
 }
 </style>

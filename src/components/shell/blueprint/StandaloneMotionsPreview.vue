@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Sparkles, X } from 'lucide-vue-next'
 import { DEMO_COMPONENTS } from '../../demos/index.js'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
@@ -41,7 +42,10 @@ function clearUnboundMotions() {
                   class="standalone-motions-section"
                 >
                   <div class="standalone-motions-head">
-                    <span>✨ 已选独立动效实时预览（可在左侧绑定到具体楼层）</span>
+                    <span class="standalone-head-label">
+                      <Sparkles :size="13" :stroke-width="1.8" aria-hidden="true" />
+                      <span>已选独立动效实时预览（可在左侧绑定到具体楼层）</span>
+                    </span>
                     <button
                       type="button"
                       class="clear-unbound-btn"
@@ -70,7 +74,7 @@ function clearUnboundMotions() {
                           :aria-label="'移除 ' + m.name"
                           @click="removeItem(m.id)"
                         >
-                          ✕
+                          <X :size="12" :stroke-width="2" aria-hidden="true" />
                         </button>
                       </div>
                       <div class="stage">
@@ -153,6 +157,12 @@ function clearUnboundMotions() {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.standalone-head-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .standalone-motions-grid {

@@ -154,7 +154,7 @@ test('shell components enforce decluttered 2-col layout, dual-viewport switching
   const toolbar = fs.readFileSync(path.join(SHELL_DIR, 'FilterToolbar.vue'), 'utf8')
   assert.match(toolbar, /position:\s*sticky/, 'FilterToolbar must be sticky')
   assert.match(toolbar, /搜编号或名称，如 S-08 \/ Bento \/ 跑马灯/, 'FilterToolbar must include exact search placeholder')
-  assert.match(toolbar, /🧩 整页拼装预览/, 'FilterToolbar must include blueprint trigger button')
+  assert.match(toolbar, /整页拼装预览/, 'FilterToolbar must include blueprint trigger button')
 
   const card = fs.readFileSync(path.join(SHELL_DIR, 'CatalogCard.vue'), 'utf8')
   assert.doesNotMatch(card, /mobile-tip/, 'CatalogCard must NOT contain .mobile-tip text')
@@ -198,7 +198,7 @@ test('shell components enforce decluttered 2-col layout, dual-viewport switching
   const standaloneMotions = fs.readFileSync(path.join(SHELL_DIR, 'blueprint', 'StandaloneMotionsPreview.vue'), 'utf8')
   assert.match(drawer, /MotionTooltip/, 'PageBlueprintDrawer must render MotionTooltip for floor motion hover previews')
   assert.match(motionPicker, /toggleFloorMotion/, 'Floor motion picker must support multi-selecting motions per floor')
-  assert.match(drawerTopBar, /🧩 整页骨架拼装预览 & 楼层话术生成器/, 'Blueprint top bar must render exact title')
+  assert.match(drawerTopBar, /整页骨架拼装预览 & 楼层话术生成器/, 'Blueprint top bar must render exact title')
   assert.match(drawerTopBar, /PAGE_PRESETS/, 'Blueprint top bar must render quick presets')
   assert.match(drawerCanvas, /BlueprintFloorPreview/, 'Blueprint canvas must render floors via BlueprintFloorPreview')
   assert.match(standaloneMotions, /unboundSelectedMotions/, 'Standalone preview must render unboundSelectedMotions')

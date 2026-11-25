@@ -1,4 +1,5 @@
 <script setup>
+import { Play, X, ChevronUp, ChevronDown, Check } from 'lucide-vue-next'
 import { MOTION_ITEMS, ITEMS_BY_ID } from '../../../data/index.js'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
@@ -55,7 +56,7 @@ function isFloorMotionChecked(layoutId, motionId) {
                       @mouseenter="emit('hover-motion', m, $event)"
                       @mouseleave="emit('leave-motion')"
                     >
-                      <i class="chip-play">▶</i>
+                      <Play :size="9" :stroke-width="2.2" class="chip-play" aria-hidden="true" />
                       <span>{{ m.code }} {{ m.name }}</span>
                       <button
                         type="button"
@@ -63,7 +64,7 @@ function isFloorMotionChecked(layoutId, motionId) {
                         :aria-label="'移除本屏动效 ' + m.name"
                         @click.stop="toggleFloorMotion(layoutId, m.id)"
                       >
-                        ✕
+                        <X :size="10" :stroke-width="2.2" aria-hidden="true" />
                       </button>
                     </span>
                   </div>
@@ -86,7 +87,8 @@ function isFloorMotionChecked(layoutId, motionId) {
                             : `+ 继续叠加更多动效（已选 ${resolvedFloorMotions(layoutId).length} 项）`
                       }}
                     </span>
-                    <i class="picker-chevron">{{ open ? '▴' : '▾' }}</i>
+                    <ChevronUp v-if="open" :size="14" :stroke-width="1.9" class="picker-chevron" aria-hidden="true" />
+                    <ChevronDown v-else :size="14" :stroke-width="1.9" class="picker-chevron" aria-hidden="true" />
                   </button>
 
                   <!-- 展开的多选动效面板（点选不收起支持连选，悬停弹动画 Tooltip） -->
@@ -108,10 +110,12 @@ function isFloorMotionChecked(layoutId, motionId) {
                       @blur="emit('leave-motion')"
                       @click="toggleFloorMotion(layoutId, m.id)"
                     >
-                      <span class="opt-check">{{ isFloorMotionChecked(layoutId, m.id) ? '✓' : '' }}</span>
+                      <span class="opt-check">
+                        <Check v-if="isFloorMotionChecked(layoutId, m.id)" :size="10" :stroke-width="2.6" aria-hidden="true" />
+                      </span>
                       <span class="opt-code">{{ m.code }}</span>
                       <span class="opt-name">{{ m.name }}</span>
-                      <i class="opt-play">▶</i>
+                      <Play :size="9" :stroke-width="2" class="opt-play" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

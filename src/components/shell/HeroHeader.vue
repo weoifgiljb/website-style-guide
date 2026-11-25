@@ -1,4 +1,5 @@
 <script setup>
+import { Monitor, Smartphone } from 'lucide-vue-next'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
 
 const { speed, setSpeed, cardViewport, setCardViewport } = useCatalogStore()
@@ -16,7 +17,7 @@ const speedOptions = [
       <div class="hero-copy">
         <h1>官网常用样式 & 动效速查</h1>
         <p class="hero-desc">
-          看着挑版式与动效，一键切换 Web / 手机端看真实组件效果，勾选后可拼装整页并复制话术。
+          挑选页面版式与交互动效，切换桌面 / 手机视口查看组件反馈，勾选后即可拼装整页并复制规格话术。
         </p>
       </div>
 
@@ -29,7 +30,8 @@ const speedOptions = [
             :aria-pressed="cardViewport === 'desktop'"
             @click="setCardViewport('desktop')"
           >
-            💻 Web 端
+            <Monitor :size="14" :stroke-width="1.75" aria-hidden="true" />
+            <span>Web 端</span>
           </button>
           <button
             type="button"
@@ -38,7 +40,8 @@ const speedOptions = [
             :aria-pressed="cardViewport === 'mobile'"
             @click="setCardViewport('mobile')"
           >
-            📱 手机端
+            <Smartphone :size="14" :stroke-width="1.75" aria-hidden="true" />
+            <span>手机端</span>
           </button>
         </div>
 
@@ -47,7 +50,7 @@ const speedOptions = [
             v-for="opt in speedOptions"
             :key="opt.value"
             type="button"
-            class="seg-btn"
+            class="seg-btn speed-btn"
             :class="{ active: speed === opt.value }"
             :aria-pressed="speed === opt.value"
             @click="setSpeed(opt.value)"
@@ -62,15 +65,14 @@ const speedOptions = [
 
 <style scoped>
 .hero {
-  background: linear-gradient(180deg, #ffffff 0%, #f6f8fc 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 22px 24px 18px;
+  background: var(--surface);
+  padding: 28px 24px 16px;
 }
 
 .hero-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
 }
@@ -81,16 +83,16 @@ const speedOptions = [
 }
 
 .hero h1 {
-  font-size: clamp(21px, 2.5vw, 27px);
+  font-size: clamp(22px, 2.4vw, 26px);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--text);
-  margin-bottom: 4px;
-  line-height: 1.3;
+  margin-bottom: 5px;
+  line-height: 1.28;
 }
 
 .hero-desc {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -99,7 +101,7 @@ const speedOptions = [
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .segmented-group {
@@ -107,22 +109,30 @@ const speedOptions = [
   align-items: center;
   gap: 2px;
   background: var(--surface-soft);
-  border: 1px solid var(--border);
-  padding: 3px;
-  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 2px;
+  border-radius: 8px;
 }
 
 .seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
-  font-size: 12.5px;
+  color: var(--text-muted);
+  font-size: 12px;
   font-weight: 500;
-  padding: 5px 11px;
-  border-radius: 7px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.speed-btn {
+  font-variant-numeric: tabular-nums;
 }
 
 .seg-btn:hover {
@@ -131,14 +141,14 @@ const speedOptions = [
 
 .seg-btn.active {
   background: var(--surface);
-  color: var(--primary);
+  color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 @media (max-width: 640px) {
   .hero {
-    padding: 18px 16px 14px;
+    padding: 20px 16px 12px;
   }
 }
 </style>

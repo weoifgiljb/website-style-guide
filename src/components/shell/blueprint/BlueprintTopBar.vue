@@ -1,4 +1,5 @@
 <script setup>
+import { Layers, X } from 'lucide-vue-next'
 import { PAGE_PRESETS } from '../../../data/index.js'
 
 const emit = defineEmits(['apply-preset', 'close'])
@@ -7,7 +8,8 @@ const emit = defineEmits(['apply-preset', 'close'])
 <template>
       <div class="drawer-topbar">
         <div class="drawer-title">
-          🧩 整页骨架拼装预览 & 楼层话术生成器
+          <Layers :size="16" :stroke-width="1.8" class="drawer-title-icon" aria-hidden="true" />
+          <span>整页骨架拼装预览 & 楼层话术生成器</span>
         </div>
 
         <div class="drawer-top-actions">
@@ -30,7 +32,7 @@ const emit = defineEmits(['apply-preset', 'close'])
             aria-label="关闭抽屉"
             @click="emit('close')"
           >
-            ✕
+            <X :size="15" :stroke-width="1.9" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -49,9 +51,17 @@ const emit = defineEmits(['apply-preset', 'close'])
 }
 
 .drawer-title {
-  font-size: 16px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15.5px;
+  font-weight: 600;
   color: var(--text);
+}
+
+.drawer-title-icon {
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .drawer-top-actions {

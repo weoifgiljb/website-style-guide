@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { Compass, X, Bot, ChevronUp, ChevronDown, Plus, Copy } from 'lucide-vue-next'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
 import { useAnchoredTooltip } from '../../composables/useAnchoredTooltip.js'
 import MotionTooltip from './MotionTooltip.vue'
@@ -75,7 +76,10 @@ onUnmounted(() => {
     <div class="modal-panel" @scroll.passive="hideTooltip">
       <div class="modal-topbar">
         <div class="topbar-main">
-          <div class="modal-title">🔍 抄外部网站动效</div>
+          <div class="modal-title">
+            <Compass :size="17" :stroke-width="1.8" class="modal-title-icon" aria-hidden="true" />
+            <span>参考外部网站动效</span>
+          </div>
           <span class="modal-sub">填链接 + 鼠标悬停标签看动画选感觉，复制发给 Agent 自动拆解</span>
         </div>
 
@@ -85,7 +89,7 @@ onUnmounted(() => {
           aria-label="关闭弹窗"
           @click="handleClose()"
         >
-          ✕
+          <X :size="15" :stroke-width="1.9" aria-hidden="true" />
         </button>
       </div>
 
@@ -101,8 +105,15 @@ onUnmounted(() => {
             class="raw-toggle-btn"
             @click="showRawPrompt = !showRawPrompt"
           >
-            <span>🤖 发给 Agent 后：它会先开浏览器看网页 → 用大白话跟你确认效果 → 你点头后再写代码</span>
-            <em>{{ showRawPrompt ? '收起话术 ▲' : '查看话术 ▼' }}</em>
+            <span class="raw-toggle-lead">
+              <Bot :size="14" :stroke-width="1.8" aria-hidden="true" />
+              <span>发给 Agent 后：它会先开浏览器看网页 → 用大白话跟你确认效果 → 你点头后再写代码</span>
+            </span>
+            <em>
+              <span>{{ showRawPrompt ? '收起话术' : '查看话术' }}</span>
+              <ChevronUp v-if="showRawPrompt" :size="13" :stroke-width="2" aria-hidden="true" />
+              <ChevronDown v-else :size="13" :stroke-width="2" aria-hidden="true" />
+            </em>
           </button>
 
           <textarea
@@ -121,14 +132,16 @@ onUnmounted(() => {
           class="attach-blueprint-btn"
           @click="attachCompetitorToBlueprint()"
         >
-          ➕ 并入整页拼装
+          <Plus :size="14" :stroke-width="2" aria-hidden="true" />
+          <span>并入整页拼装</span>
         </button>
         <button
           type="button"
           class="btn-primary copy-inspect-btn"
           @click="copyText(competitorInspectPrompt, '已复制拆解话术，直接粘贴给 Codex / Cursor 即可')"
         >
-          📋 一键复制给 Agent
+          <Copy :size="14" :stroke-width="1.8" aria-hidden="true" />
+          <span>一键复制给 Agent</span>
         </button>
       </div>
     </div>
@@ -188,9 +201,17 @@ onUnmounted(() => {
 }
 
 .modal-title {
-  font-size: 16.5px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text);
+}
+
+.modal-title-icon {
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .modal-sub {
@@ -208,6 +229,9 @@ onUnmounted(() => {
   font-size: 14px;
   cursor: pointer;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-close:hover {
@@ -245,7 +269,16 @@ onUnmounted(() => {
   text-align: left;
 }
 
+.raw-toggle-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .raw-toggle-btn em {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-style: normal;
   font-weight: 600;
   color: var(--primary);
@@ -280,21 +313,25 @@ onUnmounted(() => {
 }
 
 .attach-blueprint-btn {
-  border: 1px solid #bfdbfe;
-  background: var(--primary-soft);
-  color: var(--primary);
-  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  border-radius: 8px;
   padding: 9px 15px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
 
 .attach-blueprint-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
+  background: var(--surface-soft);
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 @media (max-width: 640px) {

@@ -1,4 +1,5 @@
 <script setup>
+import { Camera, Globe, X } from 'lucide-vue-next'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
 const { attachedCompetitorRef, openCompetitorModal, clearCompetitorRef } = useCatalogStore()
@@ -20,7 +21,9 @@ const { attachedCompetitorRef, openCompetitorModal, clearCompetitorRef } = useCa
     <div v-if="attachedCompetitorRef" class="attached-ref-card">
       <div class="attached-ref-main">
         <span class="attached-ref-tag">
-          {{ attachedCompetitorRef.sourceMode === 'screenshots' ? '📸 多帧截图' : '🌐 外部网页' }}
+          <Camera v-if="attachedCompetitorRef.sourceMode === 'screenshots'" :size="11" :stroke-width="2" aria-hidden="true" />
+          <Globe v-else :size="11" :stroke-width="2" aria-hidden="true" />
+          <span>{{ attachedCompetitorRef.sourceMode === 'screenshots' ? '多帧截图' : '外部网页' }}</span>
         </span>
         <span class="attached-ref-text">
           {{ attachedCompetitorRef.competitorUrl || attachedCompetitorRef.anchorText || '已配置视觉差值拆解要求' }}
@@ -30,9 +33,10 @@ const { attachedCompetitorRef, openCompetitorModal, clearCompetitorRef } = useCa
         type="button"
         class="icon-btn danger"
         title="移除外部网站参考"
+        aria-label="移除外部网站参考"
         @click="clearCompetitorRef()"
       >
-        ✕
+        <X :size="13" :stroke-width="2" aria-hidden="true" />
       </button>
     </div>
   </div>
@@ -111,11 +115,14 @@ const { attachedCompetitorRef, openCompetitorModal, clearCompetitorRef } = useCa
 }
 
 .attached-ref-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10.5px;
-  font-weight: 700;
-  color: #4338ca;
+  font-weight: 600;
+  color: var(--primary);
   background: #ffffff;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 999px;
   flex-shrink: 0;
 }

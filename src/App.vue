@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { RotateCcw } from 'lucide-vue-next'
 import { CATEGORIES } from './data/index.js'
 import { useCatalogStore } from './composables/useCatalogStore.js'
 import HeroHeader from './components/shell/HeroHeader.vue'
@@ -53,7 +54,8 @@ function resetFilters() {
     <HeroHeader />
     <FilterToolbar />
 
-    <main class="main container">
+    <main class="main">
+      <div class="container">
       <PresetShowcaseStrip v-if="showPresetStrip" />
 
       <template v-if="visibleSections.length > 0">
@@ -63,11 +65,11 @@ function resetFilters() {
           class="category-section"
         >
           <div class="cat-header">
-            <h2 class="cat-title">
-              <span class="cat-num" :style="section.numStyle || ''">{{ section.sectionNum }}</span>
-              <span>{{ section.sectionTitle }}</span>
-            </h2>
-            <span class="cat-desc">{{ section.sectionDesc }}</span>
+            <div class="cat-title-group">
+              <h2 class="cat-title">{{ section.sectionTitle }}</h2>
+              <span class="cat-count">{{ section.items.length }}</span>
+            </div>
+            <span v-if="section.sectionDesc" class="cat-desc">{{ section.sectionDesc }}</span>
           </div>
 
           <div class="grid">
@@ -87,12 +89,10 @@ function resetFilters() {
       <div v-else class="empty-state">
         <p>没有找到匹配的版式或动效，换个关键词试试（比如：S-08、Intercom、读条、流光、跑马灯）</p>
         <button type="button" class="reset-btn" @click="resetFilters">
-          重置筛选条件
+          <RotateCcw :size="14" :stroke-width="1.8" aria-hidden="true" />
+          <span>重置筛选条件</span>
         </button>
       </div>
-
-      <div class="tip-banner">
-        💡 节奏建议：常规交互控制在 0.25～0.45s，单页挑 1～2 个重点动效最显高级；若参考陌生小网站，点顶部「🔍 参考外部动效」生成浏览器动态采样指令。
       </div>
     </main>
 
@@ -105,11 +105,15 @@ function resetFilters() {
 
 <style scoped>
 .main {
-  padding: 24px 24px 44px;
+  padding: 28px 24px 64px;
 }
 
 .category-section {
-  margin-bottom: 42px;
+  margin-bottom: 56px;
+}
+
+.category-section:last-of-type {
+  margin-bottom: 16px;
 }
 
 .cat-header {
@@ -118,90 +122,72 @@ function resetFilters() {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-.cat-title {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--text);
-  display: flex;
-  align-items: center;
+.cat-title-group {
+  display: inline-flex;
+  align-items: baseline;
   gap: 8px;
 }
 
-.cat-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
+.cat-title {
+  font-size: 17.5px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.cat-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .cat-desc {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-muted);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 20px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 56px 20px;
+  padding: 64px 20px;
   background: var(--surface);
-  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-lg);
-  color: var(--text-muted);
-  font-size: 14px;
-  margin-bottom: 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13.5px;
 }
 
 .reset-btn {
-  border: 1px solid #bfdbfe;
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 999px;
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.18s ease, background 0.18s ease;
 }
 
 .reset-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
 }
 
-.tip-banner {
-  background: var(--warn-soft);
-  border: 1px solid #fde68a;
-  border-radius: var(--radius-md);
-  padding: 11px 16px;
-  font-size: 13px;
-  color: #92400e;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
   }
@@ -209,7 +195,11 @@ function resetFilters() {
 
 @media (max-width: 640px) {
   .main {
-    padding: 20px 16px 36px;
+    padding: 20px 16px 48px;
+  }
+
+  .category-section {
+    margin-bottom: 40px;
   }
 }
 </style>

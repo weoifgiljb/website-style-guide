@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { Search, X, Compass, Layers } from 'lucide-vue-next'
 import { CATEGORIES, ALL_ITEMS } from '../../data/index.js'
 import { useCatalogStore } from '../../composables/useCatalogStore.js'
 
@@ -44,7 +45,7 @@ const categoryCounts = computed(() => {
 
       <div class="toolbar-right">
         <div class="search-box">
-          <span class="search-icon" aria-hidden="true">🔍</span>
+          <Search :size="14" :stroke-width="1.8" class="search-icon" aria-hidden="true" />
           <input
             v-model="searchQuery"
             type="text"
@@ -58,16 +59,18 @@ const categoryCounts = computed(() => {
             aria-label="清空搜索词"
             @click="searchQuery = ''"
           >
-            ×
+            <X :size="12" :stroke-width="2" aria-hidden="true" />
           </button>
         </div>
 
         <button type="button" class="competitor-btn" @click="openCompetitorModal()">
-          <span>🔍 参考外部动效</span>
+          <Compass :size="14" :stroke-width="1.8" aria-hidden="true" />
+          <span>参考外部动效</span>
         </button>
 
         <button type="button" class="blueprint-btn" @click="openDrawer()">
-          <span>🧩 整页拼装预览</span>
+          <Layers :size="14" :stroke-width="1.8" aria-hidden="true" />
+          <span>整页拼装预览</span>
           <span v-if="selectedIds.length > 0" class="blueprint-badge">
             {{ selectedIds.length }}
           </span>
@@ -82,144 +85,157 @@ const categoryCounts = computed(() => {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(246, 248, 252, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 10px 24px;
+  padding: 0 24px;
 }
 
 .toolbar {
   max-width: 1260px;
   margin: 0 auto;
+  min-height: 52px;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
 
 .filter-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-tab {
+  position: relative;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: none;
+  background: transparent;
   color: var(--text-secondary);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12.5px;
+  height: 52px;
+  padding: 0 11px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  white-space: nowrap;
+  transition: color 0.18s ease;
+}
+
+.filter-tab::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  transition: background 0.18s ease;
 }
 
 .filter-tab:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  color: var(--text);
 }
 
 .tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 17px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--surface-soft);
-  color: var(--text-muted);
   font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.filter-tab:hover .tab-count {
-  background: var(--primary-soft);
-  color: var(--primary);
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.18s ease;
 }
 
 .filter-tab.active {
-  background: var(--text);
-  border-color: var(--text);
-  color: #ffffff;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.filter-tab.active::after {
+  background: var(--primary);
 }
 
 .filter-tab.active .tab-count {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .toolbar-right {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  flex: 1 1 340px;
-  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .search-box {
   position: relative;
-  flex: 1 1 240px;
-  max-width: 320px;
-  min-width: 210px;
+  width: 248px;
 }
 
 .search-box input {
   width: 100%;
-  padding: 7px 30px 7px 34px;
-  border-radius: 999px;
+  height: 34px;
+  padding: 0 28px 0 32px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-subtle, #f8fafc);
   font-size: 12.5px;
   color: var(--text);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
 }
 
 .search-box input:focus {
+  background: var(--surface);
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 13px;
   pointer-events: none;
 }
 
 .search-clear {
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
   border: none;
-  border-radius: 50%;
-  background: var(--surface-soft);
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
 .search-clear:hover {
-  background: var(--border);
+  background: var(--surface-soft);
   color: var(--text);
 }
 
@@ -228,21 +244,22 @@ const categoryCounts = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid #c7d2fe;
-  background: #eef2ff;
-  color: #4338ca;
-  padding: 7px 13px;
-  border-radius: 999px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  padding: 0 11px;
+  border-radius: 8px;
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
 
 .competitor-btn:hover {
-  background: #4338ca;
-  border-color: #4338ca;
-  color: #ffffff;
+  border-color: var(--border-strong);
+  background: var(--surface-subtle, #f8fafc);
+  color: var(--text);
 }
 
 .blueprint-btn {
@@ -250,21 +267,21 @@ const categoryCounts = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #bfdbfe;
-  background: var(--primary-soft);
-  color: var(--primary);
-  padding: 7px 14px;
-  border-radius: 999px;
+  height: 34px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  padding: 0 13px;
+  border-radius: 8px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .blueprint-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .blueprint-badge {
@@ -272,31 +289,60 @@ const categoryCounts = computed(() => {
   align-items: center;
   justify-content: center;
   min-width: 18px;
-  height: 18px;
+  height: 17px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--primary);
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.blueprint-btn:hover .blueprint-badge {
-  background: #ffffff;
-  color: var(--primary);
-}
+@media (max-width: 1080px) {
+  .toolbar {
+    flex-wrap: wrap;
+    padding: 6px 0 10px;
+    gap: 8px;
+  }
 
-@media (max-width: 768px) {
-  .toolbar-wrap {
-    padding: 10px 16px;
+  .filter-tabs {
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-tab {
+    height: 40px;
   }
 
   .toolbar-right {
-    justify-content: stretch;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .search-box {
-    max-width: none;
+    flex: 1 1 180px;
+    width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar-wrap {
+    padding: 0 16px;
+  }
+
+  .toolbar-right {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1 1 100%;
+  }
+
+  .competitor-btn,
+  .blueprint-btn {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 }
 </style>

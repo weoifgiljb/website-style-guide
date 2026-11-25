@@ -1,4 +1,5 @@
 <script setup>
+import { Globe, Image, Camera } from 'lucide-vue-next'
 import { QUICK_EXAMPLES } from '../../../data/competitorExamples.js'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
@@ -32,7 +33,8 @@ const { competitorDraft } = useCatalogStore()
                 :class="{ active: competitorDraft.sourceMode === 'url' }"
                 @click="competitorDraft.sourceMode = 'url'"
               >
-                🌐 填网页链接
+                <Globe :size="13" :stroke-width="1.8" aria-hidden="true" />
+                <span>填网页链接</span>
               </button>
               <button
                 type="button"
@@ -40,7 +42,8 @@ const { competitorDraft } = useCatalogStore()
                 :class="{ active: competitorDraft.sourceMode === 'screenshots' }"
                 @click="competitorDraft.sourceMode = 'screenshots'"
               >
-                🖼 发录屏截图
+                <Image :size="13" :stroke-width="1.8" aria-hidden="true" />
+                <span>发录屏截图</span>
               </button>
             </div>
           </div>
@@ -73,7 +76,8 @@ const { competitorDraft } = useCatalogStore()
           </div>
 
           <div v-else class="shot-banner">
-            📸 复制话术发给 Agent 时，顺手贴上 <b>「动之前 + 动完后」2～3 张截图</b>，Agent 会自动对比分析。
+            <Camera :size="14" :stroke-width="1.8" class="shot-icon" aria-hidden="true" />
+            <span>复制话术发给 Agent 时，顺手贴上 <b>「动之前 + 动完后」2～3 张截图</b>，Agent 会自动对比分析。</span>
           </div>
         </div>
         <div class="two-cols compact-extra">
@@ -162,6 +166,9 @@ const { competitorDraft } = useCatalogStore()
 }
 
 .mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -222,12 +229,19 @@ const { competitorDraft } = useCatalogStore()
 }
 
 .shot-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   background: var(--warn-soft);
   border: 1px solid #fde68a;
   color: #92400e;
   border-radius: 9px;
   padding: 8px 11px;
   font-size: 12px;
+}
+
+.shot-icon {
+  flex-shrink: 0;
 }
 
 @media (max-width: 640px) {

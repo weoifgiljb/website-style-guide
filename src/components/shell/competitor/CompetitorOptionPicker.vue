@@ -1,4 +1,5 @@
 <script setup>
+import { Sparkles, Crosshair, Play } from 'lucide-vue-next'
 import {
   COMPETITOR_SECTION_OPTIONS,
   COMPETITOR_TRIGGER_OPTIONS,
@@ -23,7 +24,10 @@ function toggleMultiItem(list, id) {
         <div class="step-card">
           <div class="step-head">
             <span class="step-title">② 选你看到的动效感觉</span>
-            <span class="hover-hint">✨ 鼠标移到下方任意标签，可看位置图 & 实时动效演示</span>
+            <span class="hover-hint">
+              <Sparkles :size="12" :stroke-width="1.9" aria-hidden="true" />
+              <span>鼠标移到下方任意标签，可看位置图 & 实时动效演示</span>
+            </span>
           </div>
 
           <div class="option-row">
@@ -41,7 +45,7 @@ function toggleMultiItem(list, id) {
                 @blur="emit('leave-option')"
                 @click="competitorDraft.sectionArea = sec.id"
               >
-                <i class="loc-dot">⌖</i>
+                <Crosshair :size="11" :stroke-width="2" class="loc-dot" aria-hidden="true" />
                 <span>{{ sec.shortLabel }}</span>
               </button>
             </div>
@@ -62,7 +66,7 @@ function toggleMultiItem(list, id) {
                 @blur="emit('leave-option')"
                 @click="toggleMultiItem(competitorDraft.triggers, tr.id)"
               >
-                <i class="play-dot">▶</i>
+                <Play :size="10" :stroke-width="2" class="play-dot" aria-hidden="true" />
                 <span>{{ tr.shortLabel }}</span>
               </button>
             </div>
@@ -83,7 +87,7 @@ function toggleMultiItem(list, id) {
                 @blur="emit('leave-option')"
                 @click="toggleMultiItem(competitorDraft.visualFocus, vis.id)"
               >
-                <i class="play-dot">▶</i>
+                <Play :size="10" :stroke-width="2" class="play-dot" aria-hidden="true" />
                 <span>{{ vis.shortLabel }}</span>
               </button>
             </div>
@@ -117,6 +121,9 @@ function toggleMultiItem(list, id) {
 }
 
 .hover-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
   color: var(--primary);
