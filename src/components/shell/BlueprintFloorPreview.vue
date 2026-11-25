@@ -1,4 +1,5 @@
 <script setup>
+import { Sparkles } from 'lucide-vue-next'
 import { LAYOUT_DEMO_MAP } from '../demos/index.js'
 import { useFloorMotionPlayers } from '../../composables/useFloorMotionPlayers.js'
 import FloorMotionOverlay from './blueprint/FloorMotionOverlay.vue'
@@ -9,6 +10,7 @@ const props = defineProps({
   motionItem: { type: Object, default: null },
   motionItems: { type: Array, default: () => [] },
   viewport: { type: String, default: 'desktop' },
+  compact: { type: Boolean, default: false },
   replayKey: { type: Number, default: 0 },
   scrollRatio: { type: Number, default: 0 }
 })
@@ -40,7 +42,8 @@ const players = useFloorMotionPlayers(props)
           @mouseenter="emit('hover-motion', m, $event)"
           @mouseleave="emit('leave-motion')"
         >
-          ✨ {{ m.code }} {{ m.name }}
+          <Sparkles :size="11" :stroke-width="2" aria-hidden="true" />
+          <span>{{ m.code }} {{ m.name }}</span>
         </span>
         <button type="button" class="strip-action-btn" @click="players.triggerFloorMotion">
           {{ players.actionLabel }}
@@ -74,6 +77,7 @@ const players = useFloorMotionPlayers(props)
           :is="LAYOUT_DEMO_MAP[layoutItem.demoKey]"
           v-if="LAYOUT_DEMO_MAP[layoutItem.demoKey]"
           :viewport="viewport"
+          :compact="compact"
         />
       </div>
       </FloorMotionOverlay>
@@ -110,6 +114,7 @@ const players = useFloorMotionPlayers(props)
 .strip-title { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); }
 .strip-right { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .strip-motion-pill {
+  display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; font-weight: 600; color: var(--primary);
   background: var(--primary-soft); border: 1px solid #bfdbfe;
   padding: 1px 8px; border-radius: 999px; cursor: help;

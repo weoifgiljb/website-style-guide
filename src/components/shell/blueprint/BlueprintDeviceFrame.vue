@@ -1,8 +1,40 @@
 <script setup>
 import { computed } from 'vue'
+import { Menu } from 'lucide-vue-next'
 import { useCatalogStore } from '../../../composables/useCatalogStore.js'
 
+const props = defineProps({
+  shellMode: { type: String, default: '' },
+  simWidth: { type: Number, default: 1280 },
+  simHeight: { type: Number, default: null },
+  isDragging: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['body-scroll'])
+
 const { pageTarget, previewViewport } = useCatalogStore()
+
+const resolvedShell = computed(() => {
+  if (props.shellMode) return props.shellMode
+  return previewViewport.value === 'mobile' ? 'phone' : 'browser'
+})
+
+const isMobileNav = computed(() => props.simWidth < 640 || previewViewport.value === 'mobile')
+
+const frameStyle = computed(() => {
+  const style = {}
+  if (resolvedShell.value === 'phone') {
+    if (props.simWidth !== 390) {
+      style.width = `${props.simWidth + 12}px`
+    }
+  } else {
+    style.width = `${props.simWidth}px`
+  }
+  if (props.simHeight) {
+    style.height = `${props.simHeight}px`
+  }
+  return style
+})
 
 const previewUrl = computed(() => {
   const raw = pageTarget.value.trim()
@@ -11,28 +43,44 @@ const previewUrl = computed(() => {
   const pathPart = raw.startsWith('/') ? raw : `/${raw}`
   return `https://salesmartly.com${pathPart}`
 })
+
+function onBodyScroll(event) {
+  if (!props.simHeight) return
+  const el = event.currentTarget
+  if (!el) return
+  const maxScroll = Math.max(1, el.scrollHeight - el.clientHeight)
+  emit('body-scroll', Math.min(1, Math.max(0, el.scrollTop / maxScroll)))
+}
 </script>
 
 <template>
   <div
     class="device-frame"
-    :class="previewViewport === 'mobile' ? 'is-phone' : 'is-browser'"
+    :class="[
+      `is-${resolvedShell}`,
+      {
+        'has-fixed-height': Boolean(simHeight),
+        'no-transition': isDragging
+      }
+    ]"
+    :style="frameStyle"
   >
-    <div v-if="previewViewport === 'desktop'" class="browser-chrome">
-      <div class="traffic-dots">
+    <div v-if="resolvedShell === 'phone'" class="phone-bezel-top">
+      <div class="phone-notch"></div>
+    </div>
+    <div v-else class="browser-chrome" :class="{ 'is-responsive-bar': resolvedShell === 'responsive' }">
+      <div v-if="resolvedShell === 'browser'" class="traffic-dots" aria-hidden="true">
         <span class="dot red"></span>
         <span class="dot yellow"></span>
         <span class="dot green"></span>
       </div>
       <div class="browser-address">{{ previewUrl }}</div>
-    </div>
-    <div v-else class="phone-bezel-top">
-      <div class="phone-notch"></div>
+      <span class="chrome-width-tag">{{ simWidth }}{{ simHeight ? ` × ${simHeight}` : 'px' }}</span>
     </div>
 
-    <div class="mock-navbar" :class="{ 'is-mobile': previewViewport === 'mobile' }">
+    <div class="mock-navbar" :class="{ 'is-mobile': isMobileNav }">
       <span class="mock-brand">SaleSmartly · Logo</span>
-      <div v-if="previewViewport === 'desktop'" class="mock-nav-links">
+      <div v-if="!isMobileNav" class="mock-nav-links">
         <span>功能</span>
         <span>方案</span>
         <span>定价</span>
@@ -40,15 +88,15 @@ const previewUrl = computed(() => {
       </div>
       <div v-else class="mock-nav-mobile-right">
         <span class="mock-nav-cta">免费试用</span>
-        <span class="mock-burger">☰</span>
+        <Menu :size="15" :stroke-width="2" class="mock-burger" aria-hidden="true" />
       </div>
     </div>
 
-    <div class="mock-page-body">
+    <div class="mock-page-body" @scroll="onBodyScroll">
       <slot />
     </div>
 
-    <div class="mock-footer" :class="{ 'is-mobile': previewViewport === 'mobile' }">
+    <div class="mock-footer" :class="{ 'is-mobile': isMobileNav }">
       <span>© SaleSmartly 全渠道客户沟通平台</span>
       <span>产品 · 解决方案 · 帮助中心 · 隐私政策</span>
     </div>
@@ -61,29 +109,47 @@ const previewUrl = computed(() => {
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: width 0.25s var(--ease);
+  transition: width 0.22s var(--ease);
+}
+
+.device-frame.no-transition {
+  transition: none;
+}
+
+.device-frame.has-fixed-height {
+  display: flex;
+  flex-direction: column;
 }
 
 .device-frame.is-browser {
-  width: 100%;
-  max-width: 100%;
   border-radius: 12px;
+}
+
+.device-frame.is-responsive {
+  border-radius: 6px;
+  border-color: #94a3b8;
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.14);
 }
 
 .device-frame.is-phone {
   width: 402px;
-  max-width: 100%;
   border: 6px solid #1e293b;
   border-radius: 30px;
 }
 
 .browser-chrome {
+  flex-shrink: 0;
   background: #f1f5f9;
   border-bottom: 1px solid var(--border);
-  padding: 8px 14px;
+  padding: 7px 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+.browser-chrome.is-responsive-bar {
+  padding: 5px 10px;
+  background: #f8fafc;
 }
 
 .traffic-dots {
@@ -103,16 +169,30 @@ const previewUrl = computed(() => {
 
 .browser-address {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 11.5px;
+  padding: 2px 9px;
+  font-size: 11px;
   color: var(--text-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+.chrome-width-tag {
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .phone-bezel-top {
+  flex-shrink: 0;
   background: #ffffff;
   padding: 7px 0 4px;
   display: flex;
@@ -127,6 +207,7 @@ const previewUrl = computed(() => {
 }
 
 .mock-navbar {
+  flex-shrink: 0;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   background: #ffffff;
@@ -164,7 +245,6 @@ const previewUrl = computed(() => {
 }
 
 .mock-burger {
-  font-size: 14px;
   color: var(--text-secondary);
 }
 
@@ -176,7 +256,14 @@ const previewUrl = computed(() => {
   gap: 12px;
 }
 
+.device-frame.has-fixed-height .mock-page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .mock-footer {
+  flex-shrink: 0;
   padding: 12px 16px;
   background: #0f172a;
   color: #94a3b8;
